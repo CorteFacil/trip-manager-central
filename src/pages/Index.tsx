@@ -1,13 +1,16 @@
 
 import { useState } from 'react';
+import { useAuth } from '@/hooks/useAuth';
 import Sidebar from '@/components/Sidebar';
 import Dashboard from '@/components/Dashboard';
 import TravelManagement from '@/components/TravelManagement';
 import ClientManagement from '@/components/ClientManagement';
 import BookingManagement from '@/components/BookingManagement';
-import { Menu } from 'lucide-react';
+import { Button } from '@/components/ui/button';
+import { Menu, LogOut } from 'lucide-react';
 
 const Index = () => {
+  const { signOut, user } = useAuth();
   const [currentPage, setCurrentPage] = useState('dashboard');
   const [sidebarOpen, setSidebarOpen] = useState(true);
 
@@ -24,6 +27,10 @@ const Index = () => {
       default:
         return <Dashboard />;
     }
+  };
+
+  const handleSignOut = async () => {
+    await signOut();
   };
 
   return (
@@ -48,6 +55,15 @@ const Index = () => {
               <h1 className="text-2xl font-bold text-gray-800">
                 Admin Turismo & Viagens
               </h1>
+            </div>
+            <div className="flex items-center gap-4">
+              <span className="text-sm text-gray-600">
+                Bem-vindo, {user?.email}
+              </span>
+              <Button variant="outline" size="sm" onClick={handleSignOut}>
+                <LogOut className="w-4 h-4 mr-2" />
+                Sair
+              </Button>
             </div>
           </div>
         </header>
