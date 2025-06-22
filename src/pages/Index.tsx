@@ -1,11 +1,60 @@
-// Update this page (the content is just a fallback if you fail to update the page)
+
+import { useState } from 'react';
+import Sidebar from '@/components/Sidebar';
+import Dashboard from '@/components/Dashboard';
+import TravelManagement from '@/components/TravelManagement';
+import ClientManagement from '@/components/ClientManagement';
+import BookingManagement from '@/components/BookingManagement';
+import { Menu } from 'lucide-react';
 
 const Index = () => {
+  const [currentPage, setCurrentPage] = useState('dashboard');
+  const [sidebarOpen, setSidebarOpen] = useState(true);
+
+  const renderPage = () => {
+    switch (currentPage) {
+      case 'dashboard':
+        return <Dashboard />;
+      case 'travels':
+        return <TravelManagement />;
+      case 'clients':
+        return <ClientManagement />;
+      case 'bookings':
+        return <BookingManagement />;
+      default:
+        return <Dashboard />;
+    }
+  };
+
   return (
-    <div className="min-h-screen flex items-center justify-center bg-background">
-      <div className="text-center">
-        <h1 className="text-4xl font-bold mb-4">Welcome to Your Blank App</h1>
-        <p className="text-xl text-muted-foreground">Start building your amazing project here!</p>
+    <div className="min-h-screen bg-gray-50 flex">
+      <Sidebar 
+        currentPage={currentPage} 
+        setCurrentPage={setCurrentPage}
+        isOpen={sidebarOpen}
+        onToggle={() => setSidebarOpen(!sidebarOpen)}
+      />
+      
+      <div className={`flex-1 transition-all duration-300 ${sidebarOpen ? 'ml-64' : 'ml-16'}`}>
+        <header className="bg-white shadow-sm border-b border-gray-200 px-6 py-4">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-4">
+              <button
+                onClick={() => setSidebarOpen(!sidebarOpen)}
+                className="p-2 rounded-lg hover:bg-gray-100 transition-colors"
+              >
+                <Menu className="w-5 h-5 text-gray-600" />
+              </button>
+              <h1 className="text-2xl font-bold text-gray-800">
+                Admin Turismo & Viagens
+              </h1>
+            </div>
+          </div>
+        </header>
+        
+        <main className="p-6">
+          {renderPage()}
+        </main>
       </div>
     </div>
   );
