@@ -9,7 +9,182 @@ export type Json =
 export type Database = {
   public: {
     Tables: {
-      [_ in never]: never
+      cidade: {
+        Row: {
+          criado_em: string | null
+          estado: string
+          id: string
+          nome: string
+        }
+        Insert: {
+          criado_em?: string | null
+          estado: string
+          id?: string
+          nome: string
+        }
+        Update: {
+          criado_em?: string | null
+          estado?: string
+          id?: string
+          nome?: string
+        }
+        Relationships: []
+      }
+      guia_turistico: {
+        Row: {
+          contratado_em: string | null
+          criado_em: string | null
+          email: string
+          id: string
+          nome: string
+        }
+        Insert: {
+          contratado_em?: string | null
+          criado_em?: string | null
+          email: string
+          id?: string
+          nome: string
+        }
+        Update: {
+          contratado_em?: string | null
+          criado_em?: string | null
+          email?: string
+          id?: string
+          nome?: string
+        }
+        Relationships: []
+      }
+      participante: {
+        Row: {
+          criado_em: string | null
+          email: string
+          id: string
+          nome: string
+          pago: boolean | null
+        }
+        Insert: {
+          criado_em?: string | null
+          email: string
+          id?: string
+          nome: string
+          pago?: boolean | null
+        }
+        Update: {
+          criado_em?: string | null
+          email?: string
+          id?: string
+          nome?: string
+          pago?: boolean | null
+        }
+        Relationships: []
+      }
+      ponto_turistico: {
+        Row: {
+          cidade_id: string | null
+          criado_em: string | null
+          descricao: string | null
+          id: string
+          nome: string
+        }
+        Insert: {
+          cidade_id?: string | null
+          criado_em?: string | null
+          descricao?: string | null
+          id?: string
+          nome: string
+        }
+        Update: {
+          cidade_id?: string | null
+          criado_em?: string | null
+          descricao?: string | null
+          id?: string
+          nome?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "ponto_turistico_cidade_id_fkey"
+            columns: ["cidade_id"]
+            isOneToOne: false
+            referencedRelation: "cidade"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      roteiro: {
+        Row: {
+          ordem: number
+          ponto_turistico_id: string
+          viagem_id: string
+        }
+        Insert: {
+          ordem: number
+          ponto_turistico_id: string
+          viagem_id: string
+        }
+        Update: {
+          ordem?: number
+          ponto_turistico_id?: string
+          viagem_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "roteiro_ponto_turistico_id_fkey"
+            columns: ["ponto_turistico_id"]
+            isOneToOne: false
+            referencedRelation: "ponto_turistico"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "roteiro_viagem_id_fkey"
+            columns: ["viagem_id"]
+            isOneToOne: false
+            referencedRelation: "viagem"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      viagem: {
+        Row: {
+          criado_em: string | null
+          data_fim: string
+          data_inicio: string
+          guia_turistico_id: string | null
+          id: string
+          participantes_id: string | null
+        }
+        Insert: {
+          criado_em?: string | null
+          data_fim: string
+          data_inicio: string
+          guia_turistico_id?: string | null
+          id?: string
+          participantes_id?: string | null
+        }
+        Update: {
+          criado_em?: string | null
+          data_fim?: string
+          data_inicio?: string
+          guia_turistico_id?: string | null
+          id?: string
+          participantes_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "viagem_guia_turistico_id_fkey"
+            columns: ["guia_turistico_id"]
+            isOneToOne: false
+            referencedRelation: "guia_turistico"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "viagem_participantes_id_fkey"
+            columns: ["participantes_id"]
+            isOneToOne: false
+            referencedRelation: "participante"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
     }
     Views: {
       [_ in never]: never

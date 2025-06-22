@@ -1,59 +1,57 @@
 
 import { useState } from 'react';
-import { Plus, Search, Edit, Trash2, User, Mail, Phone, MapPin } from 'lucide-react';
+import { Plus, Search, Edit, Trash2, User, Mail, CheckCircle, XCircle } from 'lucide-react';
+import { useParticipantes } from '@/hooks/useParticipantes';
 
 const ClientManagement = () => {
   const [searchTerm, setSearchTerm] = useState('');
+  const { participantes, loading, createParticipante, updateParticipante } = useParticipantes();
+  const [showForm, setShowForm] = useState(false);
+  const [formData, setFormData] = useState({
+    nome: '',
+    email: '',
+    pago: false
+  });
 
-  const clients = [
-    {
-      id: 1,
-      name: 'Maria Silva',
-      email: 'maria.silva@email.com',
-      phone: '(11) 99999-9999',
-      city: 'São Paulo, SP',
-      totalBookings: 3,
-      totalSpent: 'R$ 8.500',
-      lastBooking: '2024-01-15',
-      status: 'Ativo',
-    },
-    {
-      id: 2,
-      name: 'João Santos',
-      email: 'joao.santos@email.com',
-      phone: '(21) 88888-8888',
-      city: 'Rio de Janeiro, RJ',
-      totalBookings: 1,
-      totalSpent: 'R$ 1.800',
-      lastBooking: '2024-01-20',
-      status: 'Ativo',
-    },
-    {
-      id: 3,
-      name: 'Ana Costa',
-      email: 'ana.costa@email.com',
-      phone: '(31) 77777-7777',
-      city: 'Belo Horizonte, MG',
-      totalBookings: 2,
-      totalSpent: 'R$ 4.700',
-      lastBooking: '2024-01-10',
-      status: 'Inativo',
-    },
-  ];
-
-  const filteredClients = clients.filter(client =>
-    client.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    client.email.toLowerCase().includes(searchTerm.toLowerCase())
+  const filteredParticipantes = participantes.filter(participante =>
+    participante.nome.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    participante.email.toLowerCase().includes(searchTerm.toLowerCase())
   );
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    try {
+      await createParticipante(formData);
+      setFormData({ nome: '', email: '', pago: false });
+      setShowForm(false);
+    } catch (error) {
+      console.error('Erro ao criar participante:', error);
+    }
+  };
+
+  const togglePagamento = async (id: string, pago: boolean) => {
+    try {
+      await updateParticipante(id, { pago: !pago });
+    } catch (error) {
+      console.error('Erro ao atualizar pagamento:', error);
+    }
+  };
+
+  if (loading) {
+    return <div className="flex justify-center items-center h-64">Carregando...</div>;
+  }
 
   return (
     <div className="space-y-6">
       <div className="flex justify-between items-center">
         <div>
           <h2 className="text-3xl font-bold text-gray-800">Gestão de Clientes</h2>
-          <p className="text-gray-600 mt-1">Gerencie informações dos seus clientes</p>
+          <p className="text-gray-600 mt-1">Gerencie participantes e seus pagamentos</p>
         </div>
-        <button className="bg-blue-600 hover:bg-blue-700 text-white px-6 py-3 rounded-lg flex items-center gap-2 transition-colors">
+        <button 
+          onClick={() => setShowForm(true)}
+          className="bg-blue-600 hover:bg-blue-700 text-white px-6 py-3 rounded-lg flex items-center gap-2 transition-colors"
+        >
           <Plus className="w-5 h-5" />
           Novo Cliente
         </button>
@@ -73,85 +71,119 @@ const ClientManagement = () => {
         </div>
       </div>
 
-      {/* Clients Table */}
-      <div className="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
-        <div className="overflow-x-auto">
-          <table className="w-full">
-            <thead className="bg-gray-50 border-b border-gray-200">
-              <tr>
-                <th className="text-left py-4 px-6 font-semibold text-gray-700">Cliente</th>
-                <th className="text-left py-4 px-6 font-semibold text-gray-700">Contato</th>
-                <th className="text-left py-4 px-6 font-semibold text-gray-700">Localização</th>
-                <th className="text-left py-4 px-6 font-semibold text-gray-700">Reservas</th>
-                <th className="text-left py-4 px-6 font-semibold text-gray-700">Total Gasto</th>
-                <th className="text-left py-4 px-6 font-semibold text-gray-700">Status</th>
-                <th className="text-left py-4 px-6 font-semibold text-gray-700">Ações</th>
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-gray-200">
-              {filteredClients.map((client) => (
-                <tr key={client.id} className="hover:bg-gray-50 transition-colors">
-                  <td className="py-4 px-6">
-                    <div className="flex items-center gap-3">
-                      <div className="w-10 h-10 bg-blue-100 rounded-full flex items-center justify-center">
-                        <User className="w-5 h-5 text-blue-600" />
-                      </div>
-                      <div>
-                        <p className="font-medium text-gray-800">{client.name}</p>
-                        <p className="text-sm text-gray-600">Última reserva: {client.lastBooking}</p>
-                      </div>
-                    </div>
-                  </td>
-                  <td className="py-4 px-6">
-                    <div className="space-y-1">
-                      <div className="flex items-center text-sm text-gray-600">
-                        <Mail className="w-4 h-4 mr-2" />
-                        {client.email}
-                      </div>
-                      <div className="flex items-center text-sm text-gray-600">
-                        <Phone className="w-4 h-4 mr-2" />
-                        {client.phone}
-                      </div>
-                    </div>
-                  </td>
-                  <td className="py-4 px-6">
-                    <div className="flex items-center text-sm text-gray-600">
-                      <MapPin className="w-4 h-4 mr-2" />
-                      {client.city}
-                    </div>
-                  </td>
-                  <td className="py-4 px-6">
-                    <span className="bg-blue-100 text-blue-800 px-2 py-1 rounded-full text-sm font-medium">
-                      {client.totalBookings} reservas
-                    </span>
-                  </td>
-                  <td className="py-4 px-6">
-                    <span className="font-semibold text-gray-800">{client.totalSpent}</span>
-                  </td>
-                  <td className="py-4 px-6">
-                    <span className={`px-2 py-1 rounded-full text-xs font-medium ${
-                      client.status === 'Ativo' 
-                        ? 'bg-green-100 text-green-800' 
-                        : 'bg-red-100 text-red-800'
-                    }`}>
-                      {client.status}
-                    </span>
-                  </td>
-                  <td className="py-4 px-6">
-                    <div className="flex gap-2">
-                      <button className="p-2 text-blue-600 hover:bg-blue-50 rounded-lg transition-colors">
-                        <Edit className="w-4 h-4" />
-                      </button>
-                      <button className="p-2 text-red-600 hover:bg-red-50 rounded-lg transition-colors">
-                        <Trash2 className="w-4 h-4" />
-                      </button>
-                    </div>
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
+      {/* Form Modal */}
+      {showForm && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+          <div className="bg-white rounded-lg p-6 w-full max-w-md">
+            <h3 className="text-xl font-semibold mb-4">Novo Cliente</h3>
+            <form onSubmit={handleSubmit} className="space-y-4">
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Nome</label>
+                <input
+                  type="text"
+                  required
+                  value={formData.nome}
+                  onChange={(e) => setFormData({ ...formData, nome: e.target.value })}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Email</label>
+                <input
+                  type="email"
+                  required
+                  value={formData.email}
+                  onChange={(e) => setFormData({ ...formData, email: e.target.value })}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                />
+              </div>
+              <div className="flex items-center">
+                <input
+                  type="checkbox"
+                  id="pago"
+                  checked={formData.pago}
+                  onChange={(e) => setFormData({ ...formData, pago: e.target.checked })}
+                  className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
+                />
+                <label htmlFor="pago" className="ml-2 block text-sm text-gray-900">
+                  Pagamento realizado
+                </label>
+              </div>
+              <div className="flex gap-2 pt-4">
+                <button
+                  type="button"
+                  onClick={() => setShowForm(false)}
+                  className="flex-1 px-4 py-2 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50"
+                >
+                  Cancelar
+                </button>
+                <button
+                  type="submit"
+                  className="flex-1 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700"
+                >
+                  Salvar
+                </button>
+              </div>
+            </form>
+          </div>
         </div>
+      )}
+
+      {/* Client Cards */}
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        {filteredParticipantes.map((participante) => (
+          <div key={participante.id} className="bg-white rounded-xl shadow-sm border border-gray-100 p-6 hover:shadow-md transition-shadow">
+            <div className="flex items-start justify-between mb-4">
+              <div className="flex items-center gap-3">
+                <div className="w-12 h-12 bg-blue-100 rounded-full flex items-center justify-center">
+                  <User className="w-6 h-6 text-blue-600" />
+                </div>
+                <div>
+                  <h3 className="font-semibold text-gray-800">{participante.nome}</h3>
+                  <div className="flex items-center text-gray-600 text-sm mt-1">
+                    <Mail className="w-4 h-4 mr-1" />
+                    {participante.email}
+                  </div>
+                </div>
+              </div>
+              <button
+                onClick={() => togglePagamento(participante.id, participante.pago)}
+                className={`p-2 rounded-full transition-colors ${
+                  participante.pago 
+                    ? 'bg-green-100 text-green-600 hover:bg-green-200' 
+                    : 'bg-red-100 text-red-600 hover:bg-red-200'
+                }`}
+              >
+                {participante.pago ? (
+                  <CheckCircle className="w-5 h-5" />
+                ) : (
+                  <XCircle className="w-5 h-5" />
+                )}
+              </button>
+            </div>
+
+            <div className="mb-4">
+              <span className={`inline-block px-3 py-1 rounded-full text-sm font-medium ${
+                participante.pago 
+                  ? 'bg-green-100 text-green-800' 
+                  : 'bg-red-100 text-red-800'
+              }`}>
+                {participante.pago ? 'Pago' : 'Pendente'}
+              </span>
+            </div>
+
+            <div className="flex gap-2">
+              <button className="flex-1 bg-blue-50 hover:bg-blue-100 text-blue-600 px-4 py-2 rounded-lg flex items-center justify-center gap-2 transition-colors">
+                <Edit className="w-4 h-4" />
+                Editar
+              </button>
+              <button className="flex-1 bg-red-50 hover:bg-red-100 text-red-600 px-4 py-2 rounded-lg flex items-center justify-center gap-2 transition-colors">
+                <Trash2 className="w-4 h-4" />
+                Excluir
+              </button>
+            </div>
+          </div>
+        ))}
       </div>
     </div>
   );
