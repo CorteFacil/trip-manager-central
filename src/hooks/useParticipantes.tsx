@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 
@@ -8,6 +7,7 @@ export interface Participante {
   email: string;
   pago: boolean;
   criado_em: string;
+  avatar?: string | null;
 }
 
 export const useParticipantes = () => {
@@ -65,9 +65,23 @@ export const useParticipantes = () => {
     }
   };
 
+  const deleteParticipante = async (id: string) => {
+    try {
+      const { error } = await supabase
+        .from('participante')
+        .delete()
+        .eq('id', id);
+      if (error) throw error;
+      await fetchParticipantes();
+    } catch (error) {
+      console.error('Erro ao excluir participante:', error);
+      throw error;
+    }
+  };
+
   useEffect(() => {
     fetchParticipantes();
   }, []);
 
-  return { participantes, loading, createParticipante, updateParticipante, refetch: fetchParticipantes };
+  return { participantes, loading, createParticipante, updateParticipante, deleteParticipante, refetch: fetchParticipantes };
 };

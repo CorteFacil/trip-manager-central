@@ -1,17 +1,29 @@
-
-import { useState } from 'react';
-import { Plus, Search, Edit, Trash2, User, Mail, CheckCircle, XCircle } from 'lucide-react';
+import { useState, useRef } from 'react';
+import { Plus, Search, Edit, Trash2, User, Mail, CheckCircle, XCircle, Camera } from 'lucide-react';
 import { useParticipantes } from '@/hooks/useParticipantes';
+import { supabase } from '@/integrations/supabase/client';
+import { useViagens } from '@/hooks/useViagens';
+import { useViagemParticipantes } from '@/hooks/useViagemParticipantes';
 
 const ClientManagement = () => {
   const [searchTerm, setSearchTerm] = useState('');
-  const { participantes, loading, createParticipante, updateParticipante } = useParticipantes();
+  const { participantes, loading, createParticipante, updateParticipante, deleteParticipante } = useParticipantes();
+  const { viagens } = useViagens();
+  const { getViagensByParticipante } = useViagemParticipantes();
   const [showForm, setShowForm] = useState(false);
   const [formData, setFormData] = useState({
     nome: '',
     email: '',
-    pago: false
+    pago: false,
+    avatar: ''
   });
+  const [avatarFile, setAvatarFile] = useState(null);
+  const [editIndex, setEditIndex] = useState<string | null>(null);
+  const [showMenu, setShowMenu] = useState<string | null>(null);
+  const [menuParticipante, setMenuParticipante] = useState<any | null>(null);
+  const [editAvatarId, setEditAvatarId] = useState<string | null>(null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
+  const [expandedCard, setExpandedCard] = useState<string | null>(null);
 
   const filteredParticipantes = participantes.filter(participante =>
     participante.nome.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -21,11 +33,26 @@ const ClientManagement = () => {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     try {
-      await createParticipante(formData);
-      setFormData({ nome: '', email: '', pago: false });
+      let avatarUrl = formData.avatar;
+      if (avatarFile) {
+        try {
+          avatarUrl = await uploadAvatar(avatarFile);
+        } catch (uploadError) {
+          console.error('Erro ao fazer upload do avatar:', uploadError);
+          return;
+        }
+      }
+      if (editIndex) {
+        await updateParticipante(editIndex, { ...formData, avatar: avatarUrl });
+        setEditIndex(null);
+      } else {
+        await createParticipante({ ...formData, avatar: avatarUrl });
+      }
+      setFormData({ nome: '', email: '', pago: false, avatar: '' });
       setShowForm(false);
+      setAvatarFile(null);
     } catch (error) {
-      console.error('Erro ao criar participante:', error);
+      console.error('Erro ao salvar participante:', error);
     }
   };
 
@@ -36,6 +63,25 @@ const ClientManagement = () => {
       console.error('Erro ao atualizar pagamento:', error);
     }
   };
+
+  async function uploadAvatar(file: File, pathPrefix = 'participantes'): Promise<string> {
+    if (!file) {
+      throw new Error('Nenhum arquivo selecionado para upload.');
+    }
+    const fileExt = file.name.split('.').pop();
+    const fileName = `${Date.now()}.${fileExt}`;
+    const filePath = `${pathPrefix}/${fileName}`;
+    const { error: uploadError } = await supabase.storage.from('images').upload(filePath, file);
+    if (uploadError) {
+      console.error('Erro ao fazer upload:', uploadError);
+      throw uploadError;
+    }
+    const { data: urlData } = supabase.storage.from('images').getPublicUrl(filePath);
+    if (!urlData) {
+      throw new Error('Erro ao buscar URL pública');
+    }
+    return urlData.publicUrl;
+  }
 
   if (loading) {
     return <div className="flex justify-center items-center h-64">Carregando...</div>;
@@ -49,7 +95,12 @@ const ClientManagement = () => {
           <p className="text-gray-600 mt-1">Gerencie participantes e seus pagamentos</p>
         </div>
         <button 
-          onClick={() => setShowForm(true)}
+          onClick={() => {
+            setShowForm(true);
+            setFormData({ nome: '', email: '', pago: false, avatar: '' });
+            setAvatarFile(null);
+            setEditIndex(null);
+          }}
           className="bg-blue-600 hover:bg-blue-700 text-white px-6 py-3 rounded-lg flex items-center gap-2 transition-colors"
         >
           <Plus className="w-5 h-5" />
@@ -77,6 +128,32 @@ const ClientManagement = () => {
           <div className="bg-white rounded-lg p-6 w-full max-w-md">
             <h3 className="text-xl font-semibold mb-4">Novo Cliente</h3>
             <form onSubmit={handleSubmit} className="space-y-4">
+              <div className="flex flex-col items-center mb-4">
+                <div className="relative">
+                  <label htmlFor="avatar-upload" className="cursor-pointer">
+                    <div className="w-20 h-20 rounded-full bg-gray-200 flex items-center justify-center overflow-hidden border-2 border-gray-300">
+                      {avatarFile ? (
+                        <img src={URL.createObjectURL(avatarFile)} alt="Prévia do avatar" className="w-full h-full object-cover" />
+                      ) : formData.avatar ? (
+                        <img src={formData.avatar} alt="Avatar" className="w-full h-full object-cover" />
+                      ) : (
+                        <User className="w-8 h-8 text-gray-400" />
+                      )}
+                      <span className="absolute bottom-1 right-1 bg-white rounded-full p-1 shadow cursor-pointer border border-gray-200">
+                        <Camera className="w-5 h-5 text-gray-500" />
+                      </span>
+                    </div>
+                  </label>
+                  <input
+                    id="avatar-upload"
+                    type="file"
+                    accept="image/*"
+                    className="hidden"
+                    onChange={e => setAvatarFile(e.target.files[0])}
+                  />
+                </div>
+                <span className="text-xs text-gray-500 mt-1">Clique para adicionar foto</span>
+              </div>
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">Nome</label>
                 <input
@@ -131,59 +208,187 @@ const ClientManagement = () => {
 
       {/* Client Cards */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-        {filteredParticipantes.map((participante) => (
-          <div key={participante.id} className="bg-white rounded-xl shadow-sm border border-gray-100 p-6 hover:shadow-md transition-shadow">
-            <div className="flex items-start justify-between mb-4">
-              <div className="flex items-center gap-3">
-                <div className="w-12 h-12 bg-blue-100 rounded-full flex items-center justify-center">
-                  <User className="w-6 h-6 text-blue-600" />
-                </div>
-                <div>
-                  <h3 className="font-semibold text-gray-800">{participante.nome}</h3>
-                  <div className="flex items-center text-gray-600 text-sm mt-1">
-                    <Mail className="w-4 h-4 mr-1" />
-                    {participante.email}
+        {filteredParticipantes.map((participante) => {
+          return (
+            <div key={participante.id} className="bg-white rounded-xl shadow-sm border border-gray-100 p-6 hover:shadow-md transition-shadow min-h-[260px] flex flex-col">
+              <div className="flex items-start justify-between mb-4">
+                <div className="flex items-center gap-3">
+                  <div className="relative flex items-center justify-center" style={{ width: 48, height: 48 }}>
+                    <div className="w-12 h-12 bg-blue-100 rounded-full flex items-center justify-center overflow-hidden">
+                      {participante.avatar ? (
+                        <img
+                          src={participante.avatar}
+                          alt={participante.nome}
+                          className="w-full h-full object-cover rounded-full cursor-pointer"
+                          onClick={e => {
+                            e.stopPropagation();
+                            setShowMenu(participante.id);
+                            setMenuParticipante(participante);
+                          }}
+                        />
+                      ) : (
+                        <User className="w-6 h-6 text-blue-400" />
+                      )}
+                    </div>
+                    {participante.avatar && (
+                      <span className="absolute bottom-[-4px] right-[-4px] bg-white rounded-full p-0.5 shadow border border-gray-200 z-20">
+                        <Camera className="w-3.5 h-3.5 text-gray-500" />
+                      </span>
+                    )}
+                    {/* Popover de opções de foto, ancorado ao avatar, sobrepondo o card */}
+                    {showMenu === participante.id && menuParticipante && (
+                      <>
+                        {/* Backdrop transparente para fechar o popover ao clicar fora */}
+                        <div
+                          className="fixed inset-0 z-40"
+                          onClick={() => { setShowMenu(null); setMenuParticipante(null); }}
+                          style={{ background: 'transparent' }}
+                        />
+                        <div
+                          className="absolute left-full top-1/2 -translate-y-1/2 ml-2 bg-white border rounded shadow-lg py-1 w-40 flex flex-col text-sm z-50"
+                          style={{ minWidth: '150px' }}
+                          onClick={e => e.stopPropagation()}
+                        >
+                          <button
+                            className="w-full px-4 py-2 rounded text-blue-600 hover:bg-blue-50 text-left"
+                            onClick={() => {
+                              window.open(menuParticipante.avatar, '_blank');
+                              setShowMenu(null); setMenuParticipante(null);
+                            }}
+                          >Visualizar foto</button>
+                          <button
+                            className="w-full px-4 py-2 rounded text-gray-700 hover:bg-gray-100 text-left"
+                            onClick={() => {
+                              setShowMenu(null); setEditAvatarId(menuParticipante.id); setMenuParticipante(null);
+                              fileInputRef.current?.click();
+                            }}
+                          >Alterar foto</button>
+                          <button
+                            className="w-full px-4 py-2 rounded text-red-600 hover:bg-red-50 text-left"
+                            onClick={() => { setShowMenu(null); setMenuParticipante(null); }}
+                          >Cancelar</button>
+                        </div>
+                      </>
+                    )}
+                  </div>
+                  <div>
+                    <h3 className="font-semibold text-gray-800">{participante.nome}</h3>
+                    <div className="flex items-center text-gray-600 text-sm mt-1">
+                      <Mail className="w-4 h-4 mr-1" />
+                      {participante.email}
+                    </div>
                   </div>
                 </div>
+                <button
+                  onClick={() => togglePagamento(participante.id, participante.pago)}
+                  className={`p-2 rounded-full transition-colors ${
+                    participante.pago 
+                      ? 'bg-green-100 text-green-600 hover:bg-green-200' 
+                      : 'bg-red-100 text-red-600 hover:bg-red-200'
+                  }`}
+                >
+                  {participante.pago ? (
+                    <CheckCircle className="w-5 h-5" />
+                  ) : (
+                    <XCircle className="w-5 h-5" />
+                  )}
+                </button>
               </div>
-              <button
-                onClick={() => togglePagamento(participante.id, participante.pago)}
-                className={`p-2 rounded-full transition-colors ${
+
+              <div className="mb-4">
+                <span className={`inline-block px-3 py-1 rounded-full text-sm font-medium ${
                   participante.pago 
-                    ? 'bg-green-100 text-green-600 hover:bg-green-200' 
-                    : 'bg-red-100 text-red-600 hover:bg-red-200'
-                }`}
-              >
-                {participante.pago ? (
-                  <CheckCircle className="w-5 h-5" />
-                ) : (
-                  <XCircle className="w-5 h-5" />
-                )}
-              </button>
-            </div>
+                    ? 'bg-green-100 text-green-800' 
+                    : 'bg-red-100 text-red-800'
+                }`}>
+                  {participante.pago ? 'Pago' : 'Pendente'}
+                </span>
+              </div>
 
-            <div className="mb-4">
-              <span className={`inline-block px-3 py-1 rounded-full text-sm font-medium ${
-                participante.pago 
-                  ? 'bg-green-100 text-green-800' 
-                  : 'bg-red-100 text-red-800'
-              }`}>
-                {participante.pago ? 'Pago' : 'Pendente'}
-              </span>
-            </div>
+              {/* Viagens do participante */}
+              <div className="mt-2 min-h-[60px] flex flex-col justify-center">
+                {(() => {
+                  const viagensDoParticipante = viagens.filter(v => getViagensByParticipante(participante.id).includes(v.id));
+                  const viagensOrdenadas = viagensDoParticipante.sort((a, b) => new Date(b.data_inicio).getTime() - new Date(a.data_inicio).getTime());
+                  const mostrarTodas = expandedCard === participante.id;
+                  const viagensVisiveis = mostrarTodas ? viagensOrdenadas : viagensOrdenadas.slice(0, 3);
+                  const viagensOcultas = viagensOrdenadas.length - viagensVisiveis.length;
+                  return viagensOrdenadas.length > 0 ? (
+                    <>
+                      <div className="text-xs text-gray-500 mb-1">Viagens:</div>
+                      <ul className="flex flex-wrap gap-2">
+                        {viagensVisiveis.map(v => (
+                          <li key={v.id} className="bg-gray-100 rounded px-2 py-1 text-xs">
+                            {v.cidade?.nome ? `${v.cidade.nome}` : 'Viagem'}
+                            {v.data_inicio ? ` (${new Date(v.data_inicio).toLocaleDateString('pt-BR')}` : ''}
+                            {v.data_fim ? ` - ${new Date(v.data_fim).toLocaleDateString('pt-BR')})` : v.data_inicio ? ')' : ''}
+                          </li>
+                        ))}
+                        {!mostrarTodas && viagensOcultas > 0 && (
+                          <li>
+                            <button
+                              className="bg-gray-200 rounded px-2 py-1 text-xs text-blue-600 hover:bg-gray-300"
+                              onClick={() => setExpandedCard(participante.id)}
+                            >
+                              +{viagensOcultas} viagem{viagensOcultas > 1 ? 's' : ''}
+                            </button>
+                          </li>
+                        )}
+                        {mostrarTodas && viagensOcultas > 0 && (
+                          <li>
+                            <button
+                              className="bg-gray-200 rounded px-2 py-1 text-xs text-blue-600 hover:bg-gray-300"
+                              onClick={() => setExpandedCard(null)}
+                            >
+                              Mostrar menos
+                            </button>
+                          </li>
+                        )}
+                      </ul>
+                    </>
+                  ) : (
+                    <div className="text-xs text-gray-400">Nenhuma viagem cadastrada</div>
+                  );
+                })()}
+              </div>
 
-            <div className="flex gap-2">
-              <button className="flex-1 bg-blue-50 hover:bg-blue-100 text-blue-600 px-4 py-2 rounded-lg flex items-center justify-center gap-2 transition-colors">
-                <Edit className="w-4 h-4" />
-                Editar
-              </button>
-              <button className="flex-1 bg-red-50 hover:bg-red-100 text-red-600 px-4 py-2 rounded-lg flex items-center justify-center gap-2 transition-colors">
-                <Trash2 className="w-4 h-4" />
-                Excluir
-              </button>
+              <div className="flex gap-2 mt-auto pt-4">
+                <button
+                  className="flex-1 bg-blue-50 hover:bg-blue-100 text-blue-600 px-4 py-2 rounded-lg flex items-center justify-center gap-2 transition-colors"
+                  onClick={() => {
+                    setShowForm(true);
+                    setFormData({
+                      nome: participante.nome,
+                      email: participante.email,
+                      pago: participante.pago,
+                      avatar: participante.avatar || ''
+                    });
+                    setAvatarFile(null);
+                    setEditIndex(participante.id);
+                  }}
+                >
+                  <Edit className="w-4 h-4" />
+                  Editar
+                </button>
+                <button
+                  className="flex-1 bg-red-50 hover:bg-red-100 text-red-600 px-4 py-2 rounded-lg flex items-center justify-center gap-2 transition-colors"
+                  onClick={async () => {
+                    if (window.confirm('Tem certeza que deseja excluir este participante?')) {
+                      try {
+                        await deleteParticipante(participante.id);
+                      } catch (error) {
+                        console.error('Erro ao excluir participante:', error);
+                      }
+                    }
+                  }}
+                >
+                  <Trash2 className="w-4 h-4" />
+                  Excluir
+                </button>
+              </div>
             </div>
-          </div>
-        ))}
+          );
+        })}
       </div>
     </div>
   );

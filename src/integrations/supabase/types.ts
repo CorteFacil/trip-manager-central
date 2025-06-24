@@ -205,7 +205,67 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
-      }
+      },
+      viagem_participante: {
+        Row: {
+          viagem_id: string;
+          participante_id: string;
+        };
+        Insert: {
+          viagem_id: string;
+          participante_id: string;
+        };
+        Update: {
+          viagem_id?: string;
+          participante_id?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "viagem_participante_viagem_id_fkey";
+            columns: ["viagem_id"];
+            isOneToOne: false;
+            referencedRelation: "viagem";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "viagem_participante_participante_id_fkey";
+            columns: ["participante_id"];
+            isOneToOne: false;
+            referencedRelation: "participante";
+            referencedColumns: ["id"];
+          }
+        ];
+      },
+      viagem_cidade: {
+        Row: {
+          viagem_id: string;
+          cidade_id: string;
+        };
+        Insert: {
+          viagem_id: string;
+          cidade_id: string;
+        };
+        Update: {
+          viagem_id?: string;
+          cidade_id?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "viagem_cidade_viagem_id_fkey";
+            columns: ["viagem_id"];
+            isOneToOne: false;
+            referencedRelation: "viagem";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "viagem_cidade_cidade_id_fkey";
+            columns: ["cidade_id"];
+            isOneToOne: false;
+            referencedRelation: "cidade";
+            referencedColumns: ["id"];
+          }
+        ];
+      },
     }
     Views: {
       [_ in never]: never

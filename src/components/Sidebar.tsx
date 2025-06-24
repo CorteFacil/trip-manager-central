@@ -1,4 +1,3 @@
-
 import { 
   LayoutDashboard, 
   MapPin, 
@@ -7,6 +6,7 @@ import {
   Settings,
   LogOut 
 } from 'lucide-react';
+import { supabase } from '@/integrations/supabase/client';
 
 interface SidebarProps {
   currentPage: string;
@@ -34,7 +34,7 @@ const Sidebar = ({ currentPage, setCurrentPage, isOpen }: SidebarProps) => {
     },
     {
       id: 'bookings',
-      label: 'Reservas',
+      label: 'Recursos',
       icon: Calendar,
     },
   ];
@@ -79,7 +79,14 @@ const Sidebar = ({ currentPage, setCurrentPage, isOpen }: SidebarProps) => {
             <Settings className="w-5 h-5 flex-shrink-0" />
             {isOpen && <span className="font-medium">Configurações</span>}
           </button>
-          <button className="w-full flex items-center gap-3 px-3 py-3 rounded-lg transition-all duration-200 hover:bg-red-500/20 text-red-200">
+          <button className="w-full flex items-center gap-3 px-3 py-3 rounded-lg transition-all duration-200 hover:bg-red-500/20 text-red-200"
+            onClick={async () => {
+              if (window.confirm('Tem certeza que deseja sair?')) {
+                await supabase.auth.signOut();
+                window.location.reload();
+              }
+            }}
+          >
             <LogOut className="w-5 h-5 flex-shrink-0" />
             {isOpen && <span className="font-medium">Sair</span>}
           </button>

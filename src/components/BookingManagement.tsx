@@ -1,4 +1,3 @@
-
 import { useState } from 'react';
 import { useCidades } from '@/hooks/useCidades';
 import { usePontosTuristicos } from '@/hooks/usePontosTuristicos';
@@ -12,6 +11,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Badge } from '@/components/ui/badge';
 import { toast } from 'sonner';
 import { Plus, MapPin, Users, Building } from 'lucide-react';
+import { supabase } from '@/integrations/supabase/client';
 
 const BookingManagement = () => {
   const { cidades, loading: cidadesLoading, createCidade } = useCidades();
@@ -36,8 +36,11 @@ const BookingManagement = () => {
   const [guiaForm, setGuiaForm] = useState({
     nome: '',
     email: '',
-    contratado_em: ''
+    contratado_em: '',
+    avatar: ''
   });
+
+  const [avatarFile, setAvatarFile] = useState(null);
 
   const handleCreateCidade = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -69,17 +72,47 @@ const BookingManagement = () => {
     }
   };
 
+  async function uploadAvatar(file: File, pathPrefix = 'guias'): Promise<string> {
+    if (!file) {
+      throw new Error('Nenhum arquivo selecionado para upload.');
+    }
+    const fileExt = file.name.split('.').pop();
+    const fileName = `${Date.now()}.${fileExt}`;
+    const filePath = `${pathPrefix}/${fileName}`;
+    const { error: uploadError } = await supabase.storage.from('images').upload(filePath, file);
+    if (uploadError) {
+      console.error('Erro ao fazer upload:', uploadError);
+      throw uploadError;
+    }
+    const { data: urlData } = supabase.storage.from('images').getPublicUrl(filePath);
+    if (!urlData) {
+      throw new Error('Erro ao buscar URL pública');
+    }
+    return urlData.publicUrl;
+  }
+
   const handleCreateGuia = async (e: React.FormEvent) => {
     e.preventDefault();
     
     try {
+      let avatarUrl = guiaForm.avatar;
+      if (avatarFile) {
+        try {
+          avatarUrl = await uploadAvatar(avatarFile);
+        } catch (uploadError) {
+          toast.error('Erro ao fazer upload do avatar.');
+          console.error('Erro ao fazer upload do avatar:', uploadError);
+          return;
+        }
+      }
       await createGuia({
         nome: guiaForm.nome,
         email: guiaForm.email,
-        contratado_em: guiaForm.contratado_em || null
+        contratado_em: guiaForm.contratado_em || null,
+        avatar: avatarUrl
       });
       toast.success('Guia turístico criado com sucesso!');
-      setGuiaForm({ nome: '', email: '', contratado_em: '' });
+      setGuiaForm({ nome: '', email: '', contratado_em: '', avatar: '' });
       setIsGuiaDialogOpen(false);
     } catch (error) {
       toast.error('Erro ao criar guia turístico');
@@ -111,7 +144,7 @@ const BookingManagement = () => {
                   {cidades.length} cidades cadastradas
                 </CardDescription>
               </div>
-              <Dialog open={isCi deDialogOpen} onOpenChange={setIsCidadeDialogOpen}>
+              <Dialog open={isCidadeDialogOpen} onOpenChange={setIsCidadeDialogOpen}>
                 <DialogTrigger asChild>
                   <Button size="sm">
                     <Plus className="w-4 h-4" />
@@ -284,6 +317,17 @@ const BookingManagement = () => {
                         onChange={(e) => setGuiaForm({...guiaForm, contratado_em: e.target.value})}
                       />
                     </div>
+                    <div>
+                      <label className="block text-sm font-medium mb-2">Avatar</label>
+                      <input
+                        type="file"
+                        accept="image/*"
+                        onChange={e => setAvatarFile(e.target.files[0])}
+                      />
+                      {guiaForm.avatar && (
+                        <img src={guiaForm.avatar} alt="Avatar" className="w-16 h-16 object-cover rounded-full mt-2" />
+                      )}
+                    </div>
                     <Button type="submit" className="w-full">Criar Guia</Button>
                   </form>
                 </DialogContent>
@@ -295,6 +339,9 @@ const BookingManagement = () => {
               {guias.map((guia) => (
                 <div key={guia.id} className="p-2 border rounded">
                   <p className="font-medium">{guia.nome}</p>
+                  {guia.avatar && (
+                    <img src={guia.avatar} alt={guia.nome} className="w-8 h-8 rounded-full mr-2 inline-block" />
+                  )}
                   <p className="text-sm text-gray-600">{guia.email}</p>
                   {guia.contratado_em && (
                     <Badge variant="outline" className="text-xs mt-1">

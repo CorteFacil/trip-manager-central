@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 
@@ -8,6 +7,7 @@ export interface GuiaTuristico {
   email: string;
   contratado_em: string | null;
   criado_em: string;
+  avatar?: string | null;
 }
 
 export const useGuias = () => {

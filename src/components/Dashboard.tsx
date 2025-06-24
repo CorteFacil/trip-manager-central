@@ -1,4 +1,3 @@
-
 import { 
   Users, 
   MapPin, 
@@ -6,22 +5,35 @@ import {
   DollarSign,
   TrendingUp,
   Globe,
-  UserCheck
+  UserCheck,
+  Plus
 } from 'lucide-react';
 import { useParticipantes } from '@/hooks/useParticipantes';
 import { useViagens } from '@/hooks/useViagens';
 import { useGuias } from '@/hooks/useGuias';
 import { useCidades } from '@/hooks/useCidades';
+import { useState } from 'react';
+import { ViagemForm } from './ViagemForm';
+import { ClienteForm } from './ClienteForm';
+import { CidadeForm } from './CidadeForm';
+import { useViagemParticipantes } from '@/hooks/useViagemParticipantes';
+import { useViagemCidades } from '@/hooks/useViagemCidades';
 
 const Dashboard = () => {
   const { participantes } = useParticipantes();
   const { viagens } = useViagens();
   const { guias } = useGuias();
   const { cidades } = useCidades();
+  const { getParticipantesByViagem } = useViagemParticipantes();
+  const { getCidadesByViagem } = useViagemCidades();
+
+  // Estados para modais de ações rápidas
+  const [showNovaViagem, setShowNovaViagem] = useState(false);
+  const [showNovoCliente, setShowNovoCliente] = useState(false);
+  const [showNovaCidade, setShowNovaCidade] = useState(false);
 
   const participantesPagos = participantes.filter(p => p.pago).length;
   const viagensAtivas = viagens.length;
-  const receitaTotal = participantesPagos * 2500; // Valor médio estimado
 
   const stats = [
     {
@@ -45,22 +57,28 @@ const Dashboard = () => {
       icon: Calendar,
       color: 'bg-purple-500',
     },
-    {
-      title: 'Receita Estimada',
-      value: `R$ ${receitaTotal.toLocaleString('pt-BR')}`,
-      change: '+15%',
-      icon: DollarSign,
-      color: 'bg-yellow-500',
-    },
   ];
 
-  const recentViagens = viagens.slice(0, 3).map(viagem => ({
-    client: viagem.participante?.nome || 'Sem participante',
-    destination: 'Destino não informado',
-    date: new Date(viagem.data_inicio).toLocaleDateString('pt-BR'),
-    status: new Date(viagem.data_inicio) > new Date() ? 'Agendada' : 'Concluída',
-    value: 'R$ 2,500',
-  }));
+  // Preencher viagens recentes com dados reais
+  const recentViagens = viagens
+    .sort((a, b) => new Date(b.data_inicio).getTime() - new Date(a.data_inicio).getTime())
+    .slice(0, 5)
+    .map(viagem => {
+      const participantesIds = getParticipantesByViagem(viagem.id);
+      const participantesCount = participantesIds.length;
+      const participantesLabel = participantesCount === 1 ? '1 participante' : `${participantesCount} participantes`;
+      const cidadesIds = getCidadesByViagem(viagem.id);
+      const cidadesNomes = cidadesIds.map(cid => {
+        const c = cidades.find(x => x.id === cid);
+        return c ? c.nome : '';
+      }).filter(Boolean).join(', ');
+      return {
+        participantesLabel,
+        cidadesNomes: cidadesNomes || 'Sem cidades',
+        data: `${new Date(viagem.data_inicio).toLocaleDateString('pt-BR')} - ${new Date(viagem.data_fim).toLocaleDateString('pt-BR')}`,
+        status: new Date(viagem.data_inicio) > new Date() ? 'Agendada' : 'Concluída',
+      };
+    });
 
   return (
     <div className="space-y-6">
@@ -102,15 +120,14 @@ const Dashboard = () => {
             {recentViagens.length > 0 ? recentViagens.map((viagem, index) => (
               <div key={index} className="flex items-center justify-between p-4 bg-gray-50 rounded-lg">
                 <div>
-                  <p className="font-medium text-gray-800">{viagem.client}</p>
+                  <p className="font-medium text-gray-800">{viagem.participantesLabel}</p>
                   <p className="text-sm text-gray-600 flex items-center mt-1">
                     <Globe className="w-4 h-4 mr-1" />
-                    {viagem.destination}
+                    {viagem.cidadesNomes}
                   </p>
-                  <p className="text-sm text-gray-500 mt-1">{viagem.date}</p>
+                  <p className="text-sm text-gray-500 mt-1">{viagem.data}</p>
                 </div>
                 <div className="text-right">
-                  <p className="font-semibold text-gray-800">{viagem.value}</p>
                   <span className={`inline-block px-2 py-1 rounded-full text-xs font-medium mt-1 ${
                     viagem.status === 'Concluída' 
                       ? 'bg-green-100 text-green-800' 
@@ -130,19 +147,26 @@ const Dashboard = () => {
         <div className="bg-white rounded-xl p-6 shadow-sm border border-gray-100">
           <h3 className="text-xl font-semibold text-gray-800 mb-4">Ações Rápidas</h3>
           <div className="space-y-3">
-            <button className="w-full p-4 bg-gradient-to-r from-blue-500 to-blue-600 text-white rounded-lg hover:from-blue-600 hover:to-blue-700 transition-all duration-200 flex items-center justify-center gap-2">
+            <button className="w-full p-4 bg-gradient-to-r from-blue-500 to-blue-600 text-white rounded-lg hover:from-blue-600 hover:to-blue-700 transition-all duration-200 flex items-center justify-center gap-2"
+              onClick={() => setShowNovaViagem(true)}>
               <Calendar className="w-5 h-5" />
               Nova Viagem
             </button>
-            <button className="w-full p-4 bg-gradient-to-r from-green-500 to-green-600 text-white rounded-lg hover:from-green-600 hover:to-green-700 transition-all duration-200 flex items-center justify-center gap-2">
+            <button className="w-full p-4 bg-gradient-to-r from-green-500 to-green-600 text-white rounded-lg hover:from-green-600 hover:to-green-700 transition-all duration-200 flex items-center justify-center gap-2"
+              onClick={() => setShowNovoCliente(true)}>
               <Users className="w-5 h-5" />
               Novo Cliente
             </button>
-            <button className="w-full p-4 bg-gradient-to-r from-purple-500 to-purple-600 text-white rounded-lg hover:from-purple-600 hover:to-purple-700 transition-all duration-200 flex items-center justify-center gap-2">
+            <button className="w-full p-4 bg-gradient-to-r from-purple-500 to-purple-600 text-white rounded-lg hover:from-purple-600 hover:to-purple-700 transition-all duration-200 flex items-center justify-center gap-2"
+              onClick={() => setShowNovaCidade(true)}>
               <MapPin className="w-5 h-5" />
               Nova Cidade
             </button>
           </div>
+          {/* Modais completos para cada ação rápida */}
+          <ViagemForm open={showNovaViagem} onOpenChange={setShowNovaViagem} />
+          <ClienteForm open={showNovoCliente} onOpenChange={setShowNovoCliente} />
+          <CidadeForm open={showNovaCidade} onOpenChange={setShowNovaCidade} />
         </div>
       </div>
     </div>
