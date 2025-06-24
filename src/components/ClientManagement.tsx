@@ -83,6 +83,23 @@ const ClientManagement = () => {
     return urlData.publicUrl;
   }
 
+  // Handler para alteração de avatar diretamente pelo card
+  const handleAvatarChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files && e.target.files[0];
+    if (file && editAvatarId) {
+      try {
+        const avatarUrl = await uploadAvatar(file);
+        await updateParticipante(editAvatarId, { avatar: avatarUrl });
+      } catch (error) {
+        console.error('Erro ao atualizar avatar:', error);
+      } finally {
+        setEditAvatarId(null);
+        // Limpa o input para permitir novo upload do mesmo arquivo se necessário
+        if (fileInputRef.current) fileInputRef.current.value = '';
+      }
+    }
+  };
+
   if (loading) {
     return <div className="flex justify-center items-center h-64">Carregando...</div>;
   }
@@ -121,6 +138,16 @@ const ClientManagement = () => {
           />
         </div>
       </div>
+
+      {/* Input global para alteração de avatar pelo card */}
+      <input
+        type="file"
+        accept="image/*"
+        className="hidden"
+        style={{ display: 'none' }}
+        onChange={editAvatarId ? handleAvatarChange : undefined}
+        ref={fileInputRef}
+      />
 
       {/* Form Modal */}
       {showForm && (

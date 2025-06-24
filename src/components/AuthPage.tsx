@@ -1,4 +1,3 @@
-
 import { useState } from 'react';
 import { useAuth } from '@/hooks/useAuth';
 import { Button } from '@/components/ui/button';
@@ -78,11 +77,9 @@ const AuthPage = () => {
         
         <CardContent>
           <Tabs defaultValue="login" className="w-full">
-            <TabsList className="grid w-full grid-cols-2">
+            <TabsList className="grid w-full grid-cols-1">
               <TabsTrigger value="login">Login</TabsTrigger>
-              <TabsTrigger value="register">Cadastrar</TabsTrigger>
             </TabsList>
-            
             <TabsContent value="login">
               <Card>
                 <CardHeader>
@@ -113,51 +110,6 @@ const AuthPage = () => {
                     </div>
                     <Button type="submit" className="w-full" disabled={isLoading}>
                       {isLoading ? 'Entrando...' : 'Entrar'}
-                    </Button>
-                  </form>
-                </CardContent>
-              </Card>
-            </TabsContent>
-            
-            <TabsContent value="register">
-              <Card>
-                <CardHeader>
-                  <CardTitle>Criar Conta</CardTitle>
-                  <CardDescription>
-                    Cadastre-se como administrador do sistema
-                  </CardDescription>
-                </CardHeader>
-                <CardContent>
-                  <form onSubmit={handleRegister} className="space-y-4">
-                    <div>
-                      <Input
-                        type="text"
-                        placeholder="Nome completo"
-                        value={registerForm.nome}
-                        onChange={(e) => setRegisterForm({...registerForm, nome: e.target.value})}
-                        required
-                      />
-                    </div>
-                    <div>
-                      <Input
-                        type="email"
-                        placeholder="Email"
-                        value={registerForm.email}
-                        onChange={(e) => setRegisterForm({...registerForm, email: e.target.value})}
-                        required
-                      />
-                    </div>
-                    <div>
-                      <Input
-                        type="password"
-                        placeholder="Senha"
-                        value={registerForm.password}
-                        onChange={(e) => setRegisterForm({...registerForm, password: e.target.value})}
-                        required
-                      />
-                    </div>
-                    <Button type="submit" className="w-full" disabled={isLoading}>
-                      {isLoading ? 'Criando...' : 'Criar Conta'}
                     </Button>
                   </form>
                 </CardContent>

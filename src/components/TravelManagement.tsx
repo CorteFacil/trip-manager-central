@@ -12,7 +12,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from 
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Badge } from '@/components/ui/badge';
 import { toast } from 'sonner';
-import { Plus, MapPin, Calendar, Users, Trash2 } from 'lucide-react';
+import { Plus, MapPin, Calendar, Users, Trash2, X } from 'lucide-react';
 import { format } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 import { Dialog as Modal, DialogContent as ModalContent, DialogHeader as ModalHeader, DialogTitle as ModalTitle } from '@/components/ui/dialog';
@@ -547,6 +547,111 @@ const TravelManagement = () => {
           )}
         </ModalContent>
       </Modal>
+
+      {/* Modal de Gerenciamento de Roteiro */}
+      {selectedViagem && (
+        <Modal open={!!selectedViagem} onOpenChange={(open) => { if (!open) setSelectedViagem(null); }}>
+          <ModalContent className="max-w-2xl">
+            <ModalHeader className="flex flex-row items-center justify-between">
+              <ModalTitle>Gerenciar Roteiro</ModalTitle>
+            </ModalHeader>
+            {/* Filtros */}
+            <div className="flex gap-4 mb-4">
+              <div className="flex-1">
+                <label className="block text-xs font-medium mb-1">Cidade</label>
+                <input
+                  type="text"
+                  className="w-full border rounded px-2 py-1"
+                  placeholder="Buscar cidade..."
+                  value={outrosPontosCidadeSearch}
+                  onChange={e => setOutrosPontosCidadeSearch(e.target.value)}
+                />
+              </div>
+              <div className="flex-1">
+                <label className="block text-xs font-medium mb-1">Estado</label>
+                <input
+                  type="text"
+                  className="w-full border rounded px-2 py-1"
+                  placeholder="Buscar estado..."
+                  value={outrosPontosEstadoSearch}
+                  onChange={e => setOutrosPontosEstadoSearch(e.target.value)}
+                />
+              </div>
+            </div>
+            {/* Pontos turísticos relacionados */}
+            <div>
+              <div className="font-semibold mb-2">Pontos turísticos das cidades da viagem</div>
+              <div className="flex flex-wrap gap-2 mb-2 max-h-64 overflow-y-auto pr-2">
+                {(() => {
+                  const cidadesViagem = getCidadesByViagem(selectedViagem);
+                  const pontosRelacionados = pontos.filter(p => cidadesViagem.includes(p.cidade_id));
+                  if (pontosRelacionados.length === 0) return <span className="text-gray-500">Nenhum ponto turístico relacionado.</span>;
+                  return pontosRelacionados.map(p => {
+                    const jaNoRoteiro = getViagemRoteiros(selectedViagem).some(r => r.ponto_turistico_id === p.id);
+                    const cidade = cidades.find(c => c.id === p.cidade_id);
+                    // Filtro de escrita
+                    if (outrosPontosCidadeSearch && cidade && !cidade.nome.toLowerCase().includes(outrosPontosCidadeSearch.toLowerCase())) return null;
+                    if (outrosPontosEstadoSearch && cidade && !cidade.estado.toLowerCase().includes(outrosPontosEstadoSearch.toLowerCase())) return null;
+                    return (
+                      <span key={p.id} className="bg-gray-100 rounded px-2 py-1 flex items-center gap-1">
+                        {p.nome}
+                        {jaNoRoteiro ? (
+                          <button className="ml-1 text-red-500" onClick={() => handleRemovePontoFromRoteiro(selectedViagem, p.id)}>-</button>
+                        ) : (
+                          <button className="ml-1 text-green-600 font-bold" onClick={() => handleAddPontoToRoteiro(selectedViagem, p.id)}>+</button>
+                        )}
+                      </span>
+                    );
+                  });
+                })()}
+              </div>
+            </div>
+            {/* Mostrar mais pontos turísticos */}
+            <div className="mt-4">
+              <button
+                className="text-blue-600 underline mb-2"
+                onClick={() => setShowOutrosPontosId(selectedViagem)}
+                disabled={showOutrosPontosId === selectedViagem}
+              >
+                Mostrar mais pontos turísticos
+              </button>
+              {showOutrosPontosId === selectedViagem && (
+                <div>
+                  <div className="font-semibold mb-2">Outros pontos turísticos</div>
+                  <div className="flex flex-wrap gap-2 max-h-64 overflow-y-auto pr-2">
+                    {(() => {
+                      let outros = pontos.filter(p => {
+                        const cidade = cidades.find(c => c.id === p.cidade_id);
+                        // Filtro de escrita
+                        if (outrosPontosCidadeSearch && cidade && !cidade.nome.toLowerCase().includes(outrosPontosCidadeSearch.toLowerCase())) return false;
+                        if (outrosPontosEstadoSearch && cidade && !cidade.estado.toLowerCase().includes(outrosPontosEstadoSearch.toLowerCase())) return false;
+                        // Não mostrar os já relacionados
+                        const cidadesViagem = getCidadesByViagem(selectedViagem);
+                        if (cidadesViagem.includes(p.cidade_id)) return false;
+                        return true;
+                      });
+                      if (outros.length === 0) return <span className="text-gray-500">Nenhum ponto turístico encontrado.</span>;
+                      return outros.map(p => {
+                        const jaNoRoteiro = getViagemRoteiros(selectedViagem).some(r => r.ponto_turistico_id === p.id);
+                        return (
+                          <span key={p.id} className="bg-gray-100 rounded px-2 py-1 flex items-center gap-1">
+                            {p.nome}
+                            {jaNoRoteiro ? (
+                              <button className="ml-1 text-red-500" onClick={() => handleRemovePontoFromRoteiro(selectedViagem, p.id)}>-</button>
+                            ) : (
+                              <button className="ml-1 text-green-600 font-bold" onClick={() => handleAddPontoToRoteiro(selectedViagem, p.id)}>+</button>
+                            )}
+                          </span>
+                        );
+                      });
+                    })()}
+                  </div>
+                </div>
+              )}
+            </div>
+          </ModalContent>
+        </Modal>
+      )}
     </div>
   );
 };
