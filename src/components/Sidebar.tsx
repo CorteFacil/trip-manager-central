@@ -15,13 +15,16 @@ interface SidebarProps {
   setCurrentPage: (page: string) => void;
   isOpen: boolean;
   onToggle: () => void;
+  isMobileOpen?: boolean;
+  onMobileToggle?: () => void;
 }
 
-const Sidebar = ({ currentPage, setCurrentPage, isOpen }: SidebarProps) => {
+const Sidebar = ({ currentPage, setCurrentPage, isOpen, isMobileOpen, onMobileToggle }: SidebarProps) => {
   const [showConfig, setShowConfig] = useState(false);
   const [admins, setAdmins] = useState([]);
   const [user, setUser] = useState<any>(null);
   const popoverRef = useRef<HTMLDivElement>(null);
+  const [showText, setShowText] = useState(isOpen);
 
   useEffect(() => {
     async function fetchAdmins() {
@@ -53,6 +56,16 @@ const Sidebar = ({ currentPage, setCurrentPage, isOpen }: SidebarProps) => {
     return () => document.removeEventListener('mousedown', handleClickOutside);
   }, [showConfig]);
 
+  useEffect(() => {
+    let timeout: NodeJS.Timeout;
+    if (isOpen) {
+      timeout = setTimeout(() => setShowText(true), 300);
+    } else {
+      timeout = setTimeout(() => setShowText(false), 300);
+    }
+    return () => clearTimeout(timeout);
+  }, [isOpen]);
+
   const menuItems = [
     {
       id: 'dashboard',
@@ -77,14 +90,24 @@ const Sidebar = ({ currentPage, setCurrentPage, isOpen }: SidebarProps) => {
   ];
 
   return (
-    <div className={`fixed left-0 top-0 h-screen bg-gradient-to-b from-blue-900 via-blue-800 to-blue-700 text-white shadow-xl z-50 transition-all duration-300 w-20 ${isOpen ? 'md:w-64' : 'md:w-20'}`}>
+    <div className={`fixed top-0 h-screen bg-gradient-to-b from-blue-900 via-blue-800 to-blue-700 text-white shadow-xl z-50 transition-all duration-300
+      w-64 md:w-20
+      ${isOpen ? 'md:w-64' : 'md:w-20'}
+      ${isMobileOpen ? 'left-0' : '-left-64'} md:left-0
+    `}>
       <div className="p-4 flex flex-col h-full">
+        {/* Botão de fechar no mobile */}
+        {onMobileToggle && (
+          <button onClick={onMobileToggle} className="md:hidden absolute top-4 right-4 bg-white text-blue-700 rounded-full p-2 shadow z-50" aria-label="Fechar menu">
+            <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" /></svg>
+          </button>
+        )}
         <div className="flex items-center gap-3 mb-6">
           <div className="w-12 h-12 bg-gradient-to-tr from-blue-500 to-blue-700 rounded-xl flex items-center justify-center shadow-lg">
             <MapPin className="w-7 h-7 text-white drop-shadow" />
           </div>
-          {isOpen && (
-            <div>
+          {showText && (
+            <div className={`transition-opacity duration-300 ${isOpen ? 'opacity-100' : 'opacity-0'}`}>
               <h2 className="font-extrabold text-xl tracking-tight">TravelAdmin</h2>
               <p className="text-blue-200 text-xs font-medium">Gestão de Turismo</p>
             </div>
@@ -105,7 +128,7 @@ const Sidebar = ({ currentPage, setCurrentPage, isOpen }: SidebarProps) => {
                 `}
               >
                 <Icon className={`w-6 h-6 flex-shrink-0 ${active ? 'text-blue-300' : 'text-blue-200'}`} />
-                {isOpen && <span className="font-medium text-base tracking-tight">{item.label}</span>}
+                {showText && <span className={`font-medium text-base tracking-tight transition-opacity duration-300 ${isOpen ? 'opacity-100' : 'opacity-0'}`}>{item.label}</span>}
               </button>
             );
           })}
@@ -116,7 +139,7 @@ const Sidebar = ({ currentPage, setCurrentPage, isOpen }: SidebarProps) => {
             onClick={() => setShowConfig((v) => !v)}
           >
             <Settings className="w-5 h-5 flex-shrink-0" />
-            {isOpen && <span className="font-medium">Configurações</span>}
+            {showText && <span className={`font-medium transition-opacity duration-300 ${isOpen ? 'opacity-100' : 'opacity-0'}`}>Configurações</span>}
           </button>
           {/* Popover de configurações */}
           {showConfig && (
@@ -147,7 +170,7 @@ const Sidebar = ({ currentPage, setCurrentPage, isOpen }: SidebarProps) => {
             }}
           >
             <LogOut className="w-5 h-5 flex-shrink-0" />
-            {isOpen && <span className="font-medium">Sair</span>}
+            {showText && <span className={`font-medium transition-opacity duration-300 ${isOpen ? 'opacity-100' : 'opacity-0'}`}>Sair</span>}
           </button>
         </div>
       </div>

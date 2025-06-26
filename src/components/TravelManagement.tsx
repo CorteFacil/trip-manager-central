@@ -53,6 +53,7 @@ const TravelManagement = () => {
   const [outrosPontosEstadoSearch, setOutrosPontosEstadoSearch] = useState('');
   const [imagemFile, setImagemFile] = useState(null);
   const [refreshParticipantesModal, setRefreshParticipantesModal] = useState(0);
+  const [expandedCards, setExpandedCards] = useState<{ [id: string]: boolean }>({});
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -248,7 +249,7 @@ const TravelManagement = () => {
               {editViagem ? 'Editar Viagem' : 'Nova Viagem'}
             </Button>
           </DialogTrigger>
-          <DialogContent>
+          <DialogContent className="max-h-[70vh] overflow-y-auto">
             <DialogHeader>
               <DialogTitle>{editViagem ? 'Editar Viagem' : 'Criar Nova Viagem'}</DialogTitle>
             </DialogHeader>
@@ -412,10 +413,13 @@ const TravelManagement = () => {
         </Dialog>
       </div>
 
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 justify-items-start ml-8">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 justify-items-start px-2">
         {viagens.map((viagem) => {
+          const cidadesViagem = getCidadesByViagem(viagem.id);
+          const isExpanded = !!expandedCards[viagem.id];
+          const cidadesToShow = isExpanded ? cidadesViagem : cidadesViagem.slice(0, 1);
           return (
-            <Card key={viagem.id} className="w-96 flex flex-col shadow-lg rounded-lg overflow-hidden">
+            <Card key={viagem.id} className="w-full max-w-xs sm:w-80 md:w-96 max-h-[32rem] flex flex-col shadow-lg rounded-lg overflow-y-auto overflow-hidden">
               {/* Imagem da viagem */}
               <div className="h-40 w-full bg-gray-200 flex items-center justify-center">
                 {viagem.imagem ? (
@@ -434,13 +438,22 @@ const TravelManagement = () => {
                 </div>
 
                 {/* Cidades */}
-                <div className="flex flex-wrap gap-1">
-                  {getCidadesByViagem(viagem.id).map(cid => {
+                <div className="flex flex-wrap gap-1 items-center">
+                  {cidadesToShow.map(cid => {
                     const c = cidades.find(x => x.id === cid);
                     return c ? (
                       <Badge key={cid} variant="outline">{c.nome}</Badge>
                     ) : null;
                   })}
+                  {cidadesViagem.length > 1 && (
+                    <button
+                      className={`text-xs font-bold text-black ml-2 rounded px-2 py-1 transition bg-gray-200 ${isExpanded ? 'bg-gray-300' : ''}`}
+                      style={{ outline: 'none', border: 'none' }}
+                      onClick={() => setExpandedCards(prev => ({ ...prev, [viagem.id]: !prev[viagem.id] }))}
+                    >
+                      {isExpanded ? 'Mostrar menos' : 'Mostrar mais'}
+                    </button>
+                  )}
                 </div>
 
                 {/* Botão visualizar participantes */}

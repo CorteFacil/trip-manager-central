@@ -26,6 +26,10 @@ const PerfilPage = () => {
     fetchUser();
   }, []);
 
+  useEffect(() => {
+    window.scrollTo(0, 0);
+  }, []);
+
   async function handleSave(e: React.FormEvent) {
     e.preventDefault();
     setSuccess('');
@@ -50,7 +54,7 @@ const PerfilPage = () => {
   }
 
   return (
-    <div className="min-h-screen flex flex-col items-center justify-center bg-gray-50">
+    <div className="min-h-screen flex flex-col items-center justify-center bg-gray-50 px-4">
       <div className="w-full max-w-md mx-auto">
         <button
           className="flex items-center gap-2 mb-6 px-4 py-2 bg-blue-100 text-blue-700 rounded-lg shadow hover:bg-blue-200 transition-colors"
@@ -59,7 +63,7 @@ const PerfilPage = () => {
           <ArrowLeft className="w-5 h-5" />
           <span className="font-medium">Voltar</span>
         </button>
-        <h1 className="text-3xl font-bold mb-4 text-center">Editar Perfil</h1>
+        <h1 className="text-2xl sm:text-3xl font-bold mb-4 text-center">Editar Perfil</h1>
         <form onSubmit={handleSave} className="bg-white rounded-lg shadow p-6 w-full space-y-4">
           <div>
             <label className="block text-sm font-medium mb-1">Nome</label>
