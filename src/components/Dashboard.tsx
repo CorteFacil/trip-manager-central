@@ -109,7 +109,7 @@ const Dashboard = () => {
       value: participantes.length.toString(),
       percent: clientesCrescimento,
       icon: Users,
-      color: 'bg-blue-500',
+      color: 'bg-[#38bdf8]',
       text: clientesCrescimentoTexto
     },
     {
@@ -117,7 +117,7 @@ const Dashboard = () => {
       value: guias.length.toString(),
       percent: guiaPercent,
       icon: UserCheck,
-      color: 'bg-green-500',
+      color: 'bg-[#95c11f]',
       text: guiaMaisViagens ? `${guiaMaisViagens.nome} participou de ${guiaMaisViagensCount} viagens este mês (${guiaPercent}%)` : 'Nenhum guia participou de viagens este mês'
     },
     {
@@ -125,7 +125,7 @@ const Dashboard = () => {
       value: viagens.length.toString(),
       percent: viagensCrescimento,
       icon: Calendar,
-      color: 'bg-purple-500',
+      color: 'bg-black',
       text: viagensCrescimentoTexto
     },
   ];
@@ -154,8 +154,8 @@ const Dashboard = () => {
   return (
     <div className="space-y-6">
       <div>
-        <h2 className="text-3xl font-bold text-gray-800 mb-2">Dashboard</h2>
-        <p className="text-gray-600">Visão geral do seu negócio de turismo</p>
+        <h2 className="text-3xl font-poppins font-semibold text-gray-800 mb-2">Dashboard</h2>
+        <p className="text-[#95c11f] font-poppins italic">Visão geral do seu negócio de turismo</p>
       </div>
 
       {/* Stats Grid */}
@@ -163,7 +163,7 @@ const Dashboard = () => {
         {stats.map((stat, index) => {
           const Icon = stat.icon;
           return (
-            <div key={index} className="bg-white rounded-xl p-4 md:p-6 shadow-sm border border-gray-100 hover:shadow-md transition-shadow min-w-[220px] w-full">
+            <div key={index} className="bg-white p-4 md:p-6 shadow-sm border border-gray-100 hover:shadow-md transition-shadow min-w-[220px] w-full rounded-none">
               <div className="flex items-center justify-between">
                 <div>
                   <p className="text-gray-500 text-sm font-medium">{stat.title}</p>
@@ -171,13 +171,17 @@ const Dashboard = () => {
                   {/* Barrinha de porcentagem */}
                   <div className="w-full h-2 bg-gray-200 rounded mt-2 mb-1">
                     <div
-                      className="h-2 rounded bg-gradient-to-r from-green-400 to-green-600"
+                      className={
+                        `h-2 rounded ${
+                          index === 0 ? 'bg-[#38bdf8]' : index === 1 ? 'bg-[#95c11f]' : 'bg-black'
+                        }`
+                      }
                       style={{ width: `${Math.min(Math.abs(stat.percent), 100)}%` }}
                     />
                   </div>
                   <div className="flex items-center mt-1">
-                    <TrendingUp className="w-4 h-4 text-green-500 mr-1" />
-                    <span className="text-green-500 text-sm font-medium">
+                    <TrendingUp className={`w-4 h-4 mr-1 ${index === 0 ? 'text-[#38bdf8]' : index === 1 ? 'text-[#95c11f]' : 'text-black'}`} />
+                    <span className={`text-sm font-medium ${index === 0 ? 'text-[#38bdf8]' : index === 1 ? 'text-[#95c11f]' : 'text-black'}`}>
                       {stat.percent === null ? '—' : (stat.percent > 0 ? '+' : '') + stat.percent + '%'}
                     </span>
                   </div>
@@ -196,11 +200,11 @@ const Dashboard = () => {
       {/* Content Grid */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         {/* Recent Viagens */}
-        <div className="bg-white rounded-xl p-4 md:p-6 shadow-sm border border-gray-100 w-full">
+        <div className="bg-white p-4 md:p-6 shadow-sm border border-gray-100 w-full rounded-none">
           <h3 className="text-xl font-semibold text-gray-800 mb-4">Viagens Recentes</h3>
           <div className="space-y-4">
             {recentViagens.length > 0 ? recentViagens.map((viagem, index) => (
-              <div key={index} className="flex items-center justify-between p-4 bg-gray-50 rounded-lg">
+              <div key={index} className="flex items-center justify-between p-4 bg-gray-50 rounded-none">
                 <div>
                   <p className="font-medium text-gray-800">{viagem.participantesLabel}</p>
                   <p className="text-sm text-gray-600 flex items-center mt-1">
@@ -212,7 +216,7 @@ const Dashboard = () => {
                 <div className="text-right">
                   <span className={`inline-block px-2 py-1 rounded-full text-xs font-medium mt-1 ${
                     viagem.status === 'Concluída' 
-                      ? 'bg-green-100 text-green-800' 
+                      ? 'bg-[#95c11f]/20 text-[#95c11f]' 
                       : 'bg-blue-100 text-blue-800'
                   }`}>
                     {viagem.status}
@@ -226,20 +230,20 @@ const Dashboard = () => {
         </div>
 
         {/* Quick Actions */}
-        <div className="bg-white rounded-xl p-4 md:p-6 shadow-sm border border-gray-100 w-full">
+        <div className="bg-white p-4 md:p-6 shadow-sm border border-gray-100 w-full rounded-none">
           <h3 className="text-xl font-semibold text-gray-800 mb-4">Ações Rápidas</h3>
           <div className="space-y-3">
-            <button className="w-full p-4 bg-gradient-to-r from-blue-500 to-blue-600 text-white rounded-lg hover:from-blue-600 hover:to-blue-700 transition-all duration-200 flex items-center justify-center gap-2"
+            <button className="w-full p-4 bg-[#95c11f] text-black hover:bg-lime-500 transition-all duration-200 flex items-center justify-center gap-2 rounded-none"
               onClick={() => setShowNovaViagem(true)}>
               <Calendar className="w-5 h-5" />
               Nova Viagem
             </button>
-            <button className="w-full p-4 bg-gradient-to-r from-green-500 to-green-600 text-white rounded-lg hover:from-green-600 hover:to-green-700 transition-all duration-200 flex items-center justify-center gap-2"
+            <button className="w-full p-4 bg-[#38bdf8] text-black hover:bg-cyan-400 transition-all duration-200 flex items-center justify-center gap-2 rounded-none"
               onClick={() => setShowNovoCliente(true)}>
               <Users className="w-5 h-5" />
               Novo Cliente
             </button>
-            <button className="w-full p-4 bg-gradient-to-r from-purple-500 to-purple-600 text-white rounded-lg hover:from-purple-600 hover:to-purple-700 transition-all duration-200 flex items-center justify-center gap-2"
+            <button className="w-full p-4 bg-black text-white hover:bg-gray-900 transition-all duration-200 flex items-center justify-center gap-2 rounded-none"
               onClick={() => setShowNovaCidade(true)}>
               <MapPin className="w-5 h-5" />
               Nova Cidade

@@ -108,8 +108,8 @@ const ClientManagement = () => {
     <div className="space-y-6">
       <div className="flex justify-between items-center">
         <div>
-          <h2 className="text-3xl font-bold text-gray-800">Gestão de Clientes</h2>
-          <p className="text-gray-600 mt-1">Gerencie participantes e seus pagamentos</p>
+          <h2 className="text-3xl font-poppins font-semibold text-gray-800">Gestão de Clientes</h2>
+          <p className="text-[#95c11f] font-poppins italic mt-1">Gerencie participantes e seus pagamentos</p>
         </div>
         <button 
           onClick={() => {
@@ -118,7 +118,7 @@ const ClientManagement = () => {
             setAvatarFile(null);
             setEditIndex(null);
           }}
-          className="bg-blue-600 hover:bg-blue-700 text-white px-6 py-3 rounded-lg flex items-center gap-2 transition-colors"
+          className="bg-black hover:bg-gray-900 text-white px-6 py-3 flex items-center gap-2 transition-colors"
         >
           <Plus className="w-5 h-5" />
           Novo Cliente
@@ -132,7 +132,7 @@ const ClientManagement = () => {
           <input
             type="text"
             placeholder="Buscar clientes por nome ou email..."
-            className="w-full pl-10 pr-4 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+            className="w-full pl-10 pr-4 py-2 border border-gray-200 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
           />
@@ -188,7 +188,7 @@ const ClientManagement = () => {
                   required
                   value={formData.nome}
                   onChange={(e) => setFormData({ ...formData, nome: e.target.value })}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  className="w-full px-3 py-2 border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500"
                 />
               </div>
               <div>
@@ -198,34 +198,38 @@ const ClientManagement = () => {
                   required
                   value={formData.email}
                   onChange={(e) => setFormData({ ...formData, email: e.target.value })}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  className="w-full px-3 py-2 border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500"
                 />
               </div>
               <div className="flex items-center">
-                <input
-                  type="checkbox"
-                  id="pago"
-                  checked={formData.pago}
-                  onChange={(e) => setFormData({ ...formData, pago: e.target.checked })}
-                  className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
-                />
-                <label htmlFor="pago" className="ml-2 block text-sm text-gray-900">
-                  Pagamento realizado
+                <label className="inline-flex items-center cursor-pointer">
+                  <input
+                    type="checkbox"
+                    id="pago"
+                    checked={formData.pago}
+                    onChange={(e) => setFormData({ ...formData, pago: e.target.checked })}
+                    className="peer appearance-none h-5 w-5 border border-gray-300 mr-2 align-middle checked:bg-[#95c11f] checked:border-[#95c11f] focus:outline-none focus:ring-2 focus:ring-[#95c11f]"
+                  />
+                  <svg className="absolute w-5 h-5 pointer-events-none select-none fill-none stroke-white stroke-2 hidden peer-checked:block" viewBox="0 0 24 24">
+                    <polyline points="20 6 10 18 4 12" />
+                  </svg>
+                  <span className="ml-2 block text-sm text-gray-900">Pagamento realizado</span>
                 </label>
               </div>
               <div className="flex gap-2 pt-4">
                 <button
                   type="button"
                   onClick={() => setShowForm(false)}
-                  className="flex-1 px-4 py-2 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50"
+                  className="flex-1 px-4 py-2 border border-gray-300 text-gray-700 hover:bg-gray-50"
                 >
                   Cancelar
                 </button>
                 <button
                   type="submit"
-                  className="flex-1 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700"
+                  className="flex-1 px-4 py-2 bg-black text-white hover:bg-gray-900"
+                  disabled={loading}
                 >
-                  Salvar
+                  {loading ? 'Salvando...' : 'Salvar'}
                 </button>
               </div>
             </form>
@@ -237,7 +241,7 @@ const ClientManagement = () => {
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
         {filteredParticipantes.map((participante) => {
           return (
-            <div key={participante.id} className="bg-white rounded-xl shadow-sm border border-gray-100 p-6 hover:shadow-md transition-shadow min-h-[260px] flex flex-col">
+            <div key={participante.id} className="bg-white shadow-sm border border-gray-100 p-4 flex flex-col h-full">
               <div className="flex items-start justify-between mb-4">
                 <div className="flex items-center gap-3">
                   <div className="relative flex items-center justify-center" style={{ width: 48, height: 48 }}>
@@ -310,14 +314,14 @@ const ClientManagement = () => {
                   onClick={() => togglePagamento(participante.id, participante.pago)}
                   className={`p-2 rounded-full transition-colors ${
                     participante.pago 
-                      ? 'bg-green-100 text-green-600 hover:bg-green-200' 
+                      ? 'bg-[#95c11f]/20 text-[#95c11f] hover:bg-[#95c11f]/30' 
                       : 'bg-red-100 text-red-600 hover:bg-red-200'
                   }`}
                 >
                   {participante.pago ? (
-                    <CheckCircle className="w-5 h-5" />
+                    <CheckCircle className="w-5 h-5 text-[#95c11f]" />
                   ) : (
-                    <XCircle className="w-5 h-5" />
+                    <XCircle className="w-5 h-5 text-red-500" />
                   )}
                 </button>
               </div>
@@ -325,7 +329,7 @@ const ClientManagement = () => {
               <div className="mb-4">
                 <span className={`inline-block px-3 py-1 rounded-full text-sm font-medium ${
                   participante.pago 
-                    ? 'bg-green-100 text-green-800' 
+                    ? 'bg-[#95c11f]/20 text-[#95c11f]' 
                     : 'bg-red-100 text-red-800'
                 }`}>
                   {participante.pago ? 'Pago' : 'Pendente'}
@@ -345,7 +349,7 @@ const ClientManagement = () => {
                       <div className="text-xs text-gray-500 mb-1">Viagens:</div>
                       <ul className="flex flex-wrap gap-2">
                         {viagensVisiveis.map(v => (
-                          <li key={v.id} className="bg-gray-100 rounded px-2 py-1 text-xs">
+                          <li key={v.id} className="bg-gray-100 px-2 py-1 text-xs">
                             {v.cidade?.nome ? `${v.cidade.nome}` : 'Viagem'}
                             {v.data_inicio ? ` (${new Date(v.data_inicio).toLocaleDateString('pt-BR')}` : ''}
                             {v.data_fim ? ` - ${new Date(v.data_fim).toLocaleDateString('pt-BR')})` : v.data_inicio ? ')' : ''}
@@ -381,7 +385,7 @@ const ClientManagement = () => {
 
               <div className="flex gap-2 mt-auto pt-4">
                 <button
-                  className="flex-1 bg-blue-50 hover:bg-blue-100 text-blue-600 px-4 py-2 rounded-lg flex items-center justify-center gap-2 transition-colors"
+                  className="flex-1 bg-[#95c11f]/20 hover:bg-[#95c11f]/30 text-black px-4 py-2 flex items-center justify-center gap-2 transition-colors"
                   onClick={() => {
                     setShowForm(true);
                     setFormData({
@@ -394,11 +398,11 @@ const ClientManagement = () => {
                     setEditIndex(participante.id);
                   }}
                 >
-                  <Edit className="w-4 h-4" />
+                  <Edit className="w-4 h-4 text-black" />
                   Editar
                 </button>
                 <button
-                  className="flex-1 bg-red-50 hover:bg-red-100 text-red-600 px-4 py-2 rounded-lg flex items-center justify-center gap-2 transition-colors"
+                  className="flex-1 bg-red-50 hover:bg-red-100 text-red-600 px-4 py-2 flex items-center justify-center gap-2 transition-colors"
                   onClick={async () => {
                     if (window.confirm('Tem certeza que deseja excluir este participante?')) {
                       try {

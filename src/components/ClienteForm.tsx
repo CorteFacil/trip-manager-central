@@ -87,6 +87,7 @@ export function ClienteForm({ open, onOpenChange, onSuccess }: { open: boolean, 
               required
               value={formData.nome}
               onChange={(e) => setFormData({ ...formData, nome: e.target.value })}
+              className="rounded-none"
             />
           </div>
           <div>
@@ -96,28 +97,32 @@ export function ClienteForm({ open, onOpenChange, onSuccess }: { open: boolean, 
               required
               value={formData.email}
               onChange={(e) => setFormData({ ...formData, email: e.target.value })}
+              className="rounded-none"
             />
           </div>
           <div className="flex items-center">
-            <Input
-              type="checkbox"
-              id="pago"
-              checked={formData.pago}
-              onChange={(e) => setFormData({ ...formData, pago: e.target.checked })}
-              className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded mr-2"
-            />
-            <label htmlFor="pago" className="block text-sm text-gray-900">
-              Pagamento realizado
+            <label className="inline-flex items-center cursor-pointer">
+              <input
+                type="checkbox"
+                id="pago"
+                checked={formData.pago}
+                onChange={(e) => setFormData({ ...formData, pago: e.target.checked })}
+                className="peer appearance-none h-5 w-5 border border-gray-300 mr-2 align-middle checked:bg-[#95c11f] checked:border-[#95c11f] focus:outline-none focus:ring-2 focus:ring-[#95c11f] rounded-none"
+              />
+              <svg className="absolute w-5 h-5 pointer-events-none select-none fill-none stroke-white stroke-2 hidden peer-checked:block" viewBox="0 0 24 24">
+                <polyline points="20 6 10 18 4 12" />
+              </svg>
+              <span className="ml-2 block text-sm text-gray-900">Pagamento realizado</span>
             </label>
           </div>
           {error && <div className="text-red-500 text-sm">{error}</div>}
           <div className="flex gap-2 pt-4">
-            <Button type="button" onClick={() => onOpenChange(false)} className="flex-1 px-4 py-2 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50">
+            <button type="button" onClick={() => onOpenChange(false)} className="flex-1 px-4 py-2 border border-gray-300 text-gray-700 hover:bg-gray-50 rounded-none bg-white">
               Cancelar
-            </Button>
-            <Button type="submit" className="flex-1 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700" disabled={loading}>
+            </button>
+            <button type="submit" className="flex-1 px-4 py-2 bg-black text-white hover:bg-gray-900 rounded-none" disabled={loading}>
               {loading ? 'Salvando...' : 'Salvar'}
-            </Button>
+            </button>
           </div>
         </form>
       </DialogContent>

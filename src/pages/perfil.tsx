@@ -56,20 +56,13 @@ const PerfilPage = () => {
   return (
     <div className="min-h-screen flex flex-col items-center justify-center bg-gray-50 px-4">
       <div className="w-full max-w-md mx-auto">
-        <button
-          className="flex items-center gap-2 mb-6 px-4 py-2 bg-blue-100 text-blue-700 rounded-lg shadow hover:bg-blue-200 transition-colors"
-          onClick={() => window.location.href = '/'}
-        >
-          <ArrowLeft className="w-5 h-5" />
-          <span className="font-medium">Voltar</span>
-        </button>
-        <h1 className="text-2xl sm:text-3xl font-bold mb-4 text-center">Editar Perfil</h1>
-        <form onSubmit={handleSave} className="bg-white rounded-lg shadow p-6 w-full space-y-4">
+        <h1 className="text-2xl sm:text-3xl font-poppins font-bold mb-4 text-center">Editar Perfil</h1>
+        <form onSubmit={handleSave} className="bg-white rounded-none shadow p-6 w-full space-y-4 border border-gray-200">
           <div>
             <label className="block text-sm font-medium mb-1">Nome</label>
             <input
               type="text"
-              className="w-full border rounded px-3 py-2"
+              className="w-full border rounded-none px-3 py-2"
               value={nome}
               onChange={e => setNome(e.target.value)}
               required
@@ -79,18 +72,29 @@ const PerfilPage = () => {
             <label className="block text-sm font-medium mb-1">Email</label>
             <input
               type="email"
-              className="w-full border rounded px-3 py-2"
+              className="w-full border rounded-none px-3 py-2"
               value={email}
               onChange={e => setEmail(e.target.value)}
               required
             />
           </div>
-          <Button type="submit" className="w-full" disabled={loading}>
+          <Button type="submit" className="w-full rounded-none" disabled={loading}>
             {loading ? 'Salvando...' : 'Salvar Alterações'}
           </Button>
           {success && <div className="text-green-600 text-sm text-center">{success}</div>}
           {error && <div className="text-red-600 text-sm text-center">{error}</div>}
         </form>
+        <div className="flex justify-end mt-8">
+          <button
+            onClick={() => window.location.href = '/'}
+            className="flex items-center gap-2 px-4 py-2 bg-[#95c11f] text-black rounded-none shadow hover:bg-[#bfff2c] transition-colors font-semibold border border-[#95c11f] focus:outline-none focus:ring-2 focus:ring-[#95c11f]"
+            style={{ boxShadow: '0 2px 8px 0 rgba(0,0,0,0.10)' }}
+            aria-label="Voltar"
+          >
+            <ArrowLeft className="w-5 h-5 text-black" />
+            <span className="font-medium text-black">Voltar</span>
+          </button>
+        </div>
       </div>
     </div>
   );

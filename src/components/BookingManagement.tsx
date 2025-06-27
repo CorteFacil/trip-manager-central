@@ -10,7 +10,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from 
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Badge } from '@/components/ui/badge';
 import { toast } from 'sonner';
-import { Plus, MapPin, Users, Building } from 'lucide-react';
+import { Plus, MapPin, Users, Building, Camera } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 
 const BookingManagement = () => {
@@ -125,14 +125,14 @@ const BookingManagement = () => {
 
   return (
     <div className="space-y-6">
-      <div>
-        <h1 className="text-3xl font-bold text-gray-900">Gestão de Recursos</h1>
-        <p className="text-gray-600">Gerencie cidades, pontos turísticos e guias</p>
+      <div className="flex items-center gap-4 mb-2">
+        <h1 className="text-3xl font-poppins font-semibold text-gray-900">Gestão de Recursos</h1>
       </div>
+      <p className="text-[#95c11f] font-poppins italic">Gerencie cidades, pontos turísticos e guias</p>
 
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
         {/* Cidades */}
-        <Card>
+        <Card className="shadow-sm border border-gray-100 p-4 flex flex-col h-full rounded-none">
           <CardHeader>
             <div className="flex items-center justify-between">
               <div>
@@ -146,7 +146,7 @@ const BookingManagement = () => {
               </div>
               <Dialog open={isCidadeDialogOpen} onOpenChange={setIsCidadeDialogOpen}>
                 <DialogTrigger asChild>
-                  <Button size="sm">
+                  <Button size="sm" className="rounded-none">
                     <Plus className="w-4 h-4" />
                   </Button>
                 </DialogTrigger>
@@ -161,6 +161,7 @@ const BookingManagement = () => {
                         value={cidadeForm.nome}
                         onChange={(e) => setCidadeForm({...cidadeForm, nome: e.target.value})}
                         required
+                        className="rounded-none"
                       />
                     </div>
                     <div>
@@ -169,9 +170,10 @@ const BookingManagement = () => {
                         value={cidadeForm.estado}
                         onChange={(e) => setCidadeForm({...cidadeForm, estado: e.target.value})}
                         required
+                        className="rounded-none"
                       />
                     </div>
-                    <Button type="submit" className="w-full">Criar Cidade</Button>
+                    <Button type="submit" className="w-full rounded-none">Criar Cidade</Button>
                   </form>
                 </DialogContent>
               </Dialog>
@@ -180,7 +182,7 @@ const BookingManagement = () => {
           <CardContent>
             <div className="space-y-2 max-h-64 overflow-y-auto">
               {cidades.map((cidade) => (
-                <div key={cidade.id} className="p-2 border rounded">
+                <div key={cidade.id} className="p-2 border rounded-none">
                   <p className="font-medium">{cidade.nome}</p>
                   <p className="text-sm text-gray-600">{cidade.estado}</p>
                 </div>
@@ -190,7 +192,7 @@ const BookingManagement = () => {
         </Card>
 
         {/* Pontos Turísticos */}
-        <Card>
+        <Card className="shadow-sm border border-gray-100 p-4 flex flex-col h-full rounded-none">
           <CardHeader>
             <div className="flex items-center justify-between">
               <div>
@@ -204,7 +206,7 @@ const BookingManagement = () => {
               </div>
               <Dialog open={isPontoDialogOpen} onOpenChange={setIsPontoDialogOpen}>
                 <DialogTrigger asChild>
-                  <Button size="sm">
+                  <Button size="sm" className="rounded-none">
                     <Plus className="w-4 h-4" />
                   </Button>
                 </DialogTrigger>
@@ -219,6 +221,7 @@ const BookingManagement = () => {
                         value={pontoForm.nome}
                         onChange={(e) => setPontoForm({...pontoForm, nome: e.target.value})}
                         required
+                        className="rounded-none"
                       />
                     </div>
                     <div>
@@ -226,12 +229,13 @@ const BookingManagement = () => {
                       <Textarea
                         value={pontoForm.descricao}
                         onChange={(e) => setPontoForm({...pontoForm, descricao: e.target.value})}
+                        className="rounded-none"
                       />
                     </div>
                     <div>
                       <label className="block text-sm font-medium mb-2">Cidade</label>
                       <Select value={pontoForm.cidade_id} onValueChange={(value) => setPontoForm({...pontoForm, cidade_id: value})}>
-                        <SelectTrigger>
+                        <SelectTrigger className="rounded-none">
                           <SelectValue placeholder="Selecione uma cidade" />
                         </SelectTrigger>
                         <SelectContent>
@@ -243,7 +247,7 @@ const BookingManagement = () => {
                         </SelectContent>
                       </Select>
                     </div>
-                    <Button type="submit" className="w-full">Criar Ponto</Button>
+                    <Button type="submit" className="w-full rounded-none">Criar Ponto</Button>
                   </form>
                 </DialogContent>
               </Dialog>
@@ -252,7 +256,7 @@ const BookingManagement = () => {
           <CardContent>
             <div className="space-y-2 max-h-64 overflow-y-auto">
               {pontos.map((ponto) => (
-                <div key={ponto.id} className="p-2 border rounded">
+                <div key={ponto.id} className="p-2 border rounded-none">
                   <p className="font-medium">{ponto.nome}</p>
                   {ponto.cidade && (
                     <Badge variant="secondary" className="text-xs">
@@ -269,7 +273,7 @@ const BookingManagement = () => {
         </Card>
 
         {/* Guias Turísticos */}
-        <Card>
+        <Card className="shadow-sm border border-gray-100 p-4 flex flex-col h-full rounded-none">
           <CardHeader>
             <div className="flex items-center justify-between">
               <div>
@@ -283,7 +287,7 @@ const BookingManagement = () => {
               </div>
               <Dialog open={isGuiaDialogOpen} onOpenChange={setIsGuiaDialogOpen}>
                 <DialogTrigger asChild>
-                  <Button size="sm">
+                  <Button size="sm" className="rounded-none">
                     <Plus className="w-4 h-4" />
                   </Button>
                 </DialogTrigger>
@@ -292,12 +296,39 @@ const BookingManagement = () => {
                     <DialogTitle>Novo Guia Turístico</DialogTitle>
                   </DialogHeader>
                   <form onSubmit={handleCreateGuia} className="space-y-4">
+                    <div className="flex flex-col items-center mb-4">
+                      <div className="relative">
+                        <label htmlFor="guia-avatar-upload" className="cursor-pointer">
+                          <div className="w-20 h-20 rounded-full bg-gray-200 flex items-center justify-center overflow-hidden border-2 border-gray-300">
+                            {avatarFile ? (
+                              <img src={URL.createObjectURL(avatarFile)} alt="Prévia do avatar" className="w-full h-full object-cover" />
+                            ) : guiaForm.avatar ? (
+                              <img src={guiaForm.avatar} alt="Avatar" className="w-full h-full object-cover" />
+                            ) : (
+                              <Users className="w-8 h-8 text-gray-400" />
+                            )}
+                            <span className="absolute bottom-1 right-1 bg-white rounded-full p-1 shadow cursor-pointer border border-gray-200">
+                              <Camera className="w-5 h-5 text-gray-500" />
+                            </span>
+                          </div>
+                        </label>
+                        <input
+                          id="guia-avatar-upload"
+                          type="file"
+                          accept="image/*"
+                          className="hidden"
+                          onChange={e => setAvatarFile(e.target.files[0])}
+                        />
+                      </div>
+                      <span className="text-xs text-gray-500 mt-1">Clique para adicionar foto</span>
+                    </div>
                     <div>
                       <label className="block text-sm font-medium mb-2">Nome do Guia</label>
                       <Input
                         value={guiaForm.nome}
                         onChange={(e) => setGuiaForm({...guiaForm, nome: e.target.value})}
                         required
+                        className="rounded-none"
                       />
                     </div>
                     <div>
@@ -307,6 +338,7 @@ const BookingManagement = () => {
                         value={guiaForm.email}
                         onChange={(e) => setGuiaForm({...guiaForm, email: e.target.value})}
                         required
+                        className="rounded-none"
                       />
                     </div>
                     <div>
@@ -315,20 +347,10 @@ const BookingManagement = () => {
                         type="date"
                         value={guiaForm.contratado_em}
                         onChange={(e) => setGuiaForm({...guiaForm, contratado_em: e.target.value})}
+                        className="rounded-none"
                       />
                     </div>
-                    <div>
-                      <label className="block text-sm font-medium mb-2">Avatar</label>
-                      <input
-                        type="file"
-                        accept="image/*"
-                        onChange={e => setAvatarFile(e.target.files[0])}
-                      />
-                      {guiaForm.avatar && (
-                        <img src={guiaForm.avatar} alt="Avatar" className="w-16 h-16 object-cover rounded-full mt-2" />
-                      )}
-                    </div>
-                    <Button type="submit" className="w-full">Criar Guia</Button>
+                    <Button type="submit" className="w-full rounded-none">Criar Guia</Button>
                   </form>
                 </DialogContent>
               </Dialog>
@@ -337,17 +359,23 @@ const BookingManagement = () => {
           <CardContent>
             <div className="space-y-2 max-h-64 overflow-y-auto">
               {guias.map((guia) => (
-                <div key={guia.id} className="p-2 border rounded">
-                  <p className="font-medium">{guia.nome}</p>
-                  {guia.avatar && (
-                    <img src={guia.avatar} alt={guia.nome} className="w-8 h-8 rounded-full mr-2 inline-block" />
-                  )}
-                  <p className="text-sm text-gray-600">{guia.email}</p>
-                  {guia.contratado_em && (
-                    <Badge variant="outline" className="text-xs mt-1">
-                      Contratado em {new Date(guia.contratado_em).toLocaleDateString('pt-BR')}
-                    </Badge>
-                  )}
+                <div key={guia.id} className="p-2 border rounded-none flex items-center gap-3">
+                  <div className="w-10 h-10 rounded-full bg-gray-200 flex items-center justify-center overflow-hidden border-2 border-gray-300">
+                    {guia.avatar ? (
+                      <img src={guia.avatar} alt={guia.nome} className="w-full h-full object-cover" />
+                    ) : (
+                      <Users className="w-6 h-6 text-gray-400" />
+                    )}
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <p className="font-medium truncate">{guia.nome}</p>
+                    <p className="text-sm text-gray-600 truncate">{guia.email}</p>
+                    {guia.contratado_em && (
+                      <Badge variant="outline" className="text-xs mt-1">
+                        Contratado em {new Date(guia.contratado_em).toLocaleDateString('pt-BR')}
+                      </Badge>
+                    )}
+                  </div>
                 </div>
               ))}
             </div>

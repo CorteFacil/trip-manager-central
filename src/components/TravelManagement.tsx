@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useViagens } from '@/hooks/useViagens';
 import { useParticipantes } from '@/hooks/useParticipantes';
 import { useGuias } from '@/hooks/useGuias';
@@ -12,13 +12,14 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from 
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Badge } from '@/components/ui/badge';
 import { toast } from 'sonner';
-import { Plus, MapPin, Calendar, Users, Trash2, X } from 'lucide-react';
+import { Plus, MapPin, Calendar, Users, Trash2, X, Edit } from 'lucide-react';
 import { format } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 import { Dialog as Modal, DialogContent as ModalContent, DialogHeader as ModalHeader, DialogTitle as ModalTitle } from '@/components/ui/dialog';
 import { supabase } from '@/integrations/supabase/client';
 import { useViagemParticipantes } from '@/hooks/useViagemParticipantes';
 import { useViagemCidades } from '@/hooks/useViagemCidades';
+import { useIsMobile } from '@/hooks/use-mobile';
 
 const TravelManagement = () => {
   const { viagens, loading: viagensLoading, createViagem, deleteViagem, updateViagem, refetch } = useViagens();
@@ -54,6 +55,10 @@ const TravelManagement = () => {
   const [imagemFile, setImagemFile] = useState(null);
   const [refreshParticipantesModal, setRefreshParticipantesModal] = useState(0);
   const [expandedCards, setExpandedCards] = useState<{ [id: string]: boolean }>({});
+  const [openPopoverId, setOpenPopoverId] = useState<string | null>(null);
+  const popoverRefs = useRef<Record<string, HTMLDivElement | null>>({});
+  const popoverButtonRefs = useRef<Record<string, HTMLButtonElement | null>>({});
+  const isMobile = useIsMobile();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -230,16 +235,37 @@ const TravelManagement = () => {
     return urlData.publicUrl;
   }
 
+  useEffect(() => {
+    function handleClickOutside(event: MouseEvent) {
+      if (!openPopoverId) return;
+      const popover = popoverRefs.current[openPopoverId];
+      const button = popoverButtonRefs.current[openPopoverId];
+      if (
+        (popover && popover.contains(event.target as Node)) ||
+        (button && button.contains(event.target as Node))
+      ) {
+        return;
+      }
+      setOpenPopoverId(null);
+    }
+    if (openPopoverId) {
+      document.addEventListener('mousedown', handleClickOutside);
+    } else {
+      document.removeEventListener('mousedown', handleClickOutside);
+    }
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, [openPopoverId]);
+
   if (viagensLoading) {
     return <div>Carregando viagens...</div>;
   }
 
   return (
     <div className="space-y-6 mx-8 lg:ml-8">
-      <div className="flex justify-between items-center">
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 mb-6">
         <div>
-          <h1 className="text-3xl font-bold text-gray-900">Gestão de Viagens</h1>
-          <p className="text-gray-600">Gerencie viagens, roteiros e itinerários</p>
+          <h2 className="text-3xl font-poppins font-semibold text-gray-800">Gestão de Viagens</h2>
+          <p className="text-[#95c11f] font-poppins italic">Gerencie viagens, participantes e cidades</p>
         </div>
         
         <Dialog open={isDialogOpen} onOpenChange={(open) => { setIsDialogOpen(open); if (!open) setEditViagem(null); }}>
@@ -258,7 +284,7 @@ const TravelManagement = () => {
                 <label className="block text-sm font-medium mb-2">Participante</label>
                 <div className="flex gap-2 items-center mb-2">
                   <select
-                    className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-base"
+                    className="flex h-10 w-full border border-input bg-background px-3 py-2 text-base rounded-none"
                     value={selectedParticipante}
                     onChange={e => setSelectedParticipante(e.target.value)}
                   >
@@ -273,7 +299,7 @@ const TravelManagement = () => {
                   </select>
                   <button
                     type="button"
-                    className="bg-blue-600 text-white rounded px-3 py-2 text-sm"
+                    className="bg-[#95c11f] text-white px-3 py-2 text-sm rounded-none"
                     onClick={() => {
                       if (selectedParticipante && !formData.participantes_id.includes(selectedParticipante)) {
                         setFormData(prev => ({
@@ -291,7 +317,7 @@ const TravelManagement = () => {
                     const p = participantes.find(x => x.id === pid);
                     if (!p) return null;
                     return (
-                      <span key={pid} className="bg-gray-200 rounded px-2 py-1 flex items-center gap-1">
+                      <span key={pid} className="bg-gray-200 rounded-none px-2 py-1 flex items-center gap-1">
                         {p.nome}
                         <button
                           type="button"
@@ -309,7 +335,7 @@ const TravelManagement = () => {
               <div>
                 <label className="block text-sm font-medium mb-2">Guia Turístico</label>
                 <select
-                  className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-base"
+                  className="flex h-10 w-full border border-input bg-background px-3 py-2 text-base rounded-none"
                   value={formData.guia_turistico_id}
                   onChange={e => setFormData({ ...formData, guia_turistico_id: e.target.value })}
                   required
@@ -326,7 +352,7 @@ const TravelManagement = () => {
                 <label className="block text-sm font-medium mb-2">Cidade</label>
                 <div className="flex gap-2 items-center mb-2">
                   <select
-                    className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-base"
+                    className="flex h-10 w-full border border-input bg-background px-3 py-2 text-base rounded-none"
                     value={selectedCidade}
                     onChange={e => setSelectedCidade(e.target.value)}
                     required={!formData.cidades_id.length}
@@ -342,7 +368,7 @@ const TravelManagement = () => {
                   </select>
                   <button
                     type="button"
-                    className="bg-blue-600 text-white rounded px-3 py-2 text-sm"
+                    className="bg-[#95c11f] text-white px-3 py-2 text-sm rounded-none"
                     onClick={() => {
                       if (selectedCidade && !formData.cidades_id.includes(selectedCidade)) {
                         setFormData({
@@ -360,7 +386,7 @@ const TravelManagement = () => {
                     const c = cidades.find(x => x.id === cid);
                     if (!c) return null;
                     return (
-                      <span key={cid} className="bg-gray-200 rounded px-2 py-1 flex items-center gap-1">
+                      <span key={cid} className="bg-gray-200 rounded-none px-2 py-1 flex items-center gap-1">
                         {c.nome}
                         <button
                           type="button"
@@ -413,13 +439,13 @@ const TravelManagement = () => {
         </Dialog>
       </div>
 
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 justify-items-start px-2">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8 justify-items-stretch px-0">
         {viagens.map((viagem) => {
           const cidadesViagem = getCidadesByViagem(viagem.id);
           const isExpanded = !!expandedCards[viagem.id];
           const cidadesToShow = isExpanded ? cidadesViagem : cidadesViagem.slice(0, 1);
           return (
-            <Card key={viagem.id} className="w-full max-w-xs sm:w-80 md:w-96 max-h-[32rem] flex flex-col shadow-lg rounded-lg overflow-y-auto overflow-hidden">
+            <Card key={viagem.id} className="w-full flex flex-col shadow-2xl border border-gray-100 p-0 rounded-none transition-all duration-3000 ease-in-out hover:shadow-[0_8px_32px_rgba(0,0,0,0.25)] hover:-translate-y-2 hover:opacity-90 bg-white">
               {/* Imagem da viagem */}
               <div className="h-40 w-full bg-gray-200 flex items-center justify-center">
                 {viagem.imagem ? (
@@ -428,17 +454,14 @@ const TravelManagement = () => {
                   <span className="text-gray-400">Sem imagem</span>
                 )}
               </div>
-
-              {/* Conteúdo abaixo da imagem */}
               <div className="p-4 flex flex-col gap-2 flex-1">
-                {/* Datas */}
+                {/* Data */}
                 <div className="text-sm text-gray-600 flex items-center gap-2">
                   <Calendar className="w-4 h-4" />
                   {format(new Date(viagem.data_inicio), 'dd/MM/yyyy')} - {format(new Date(viagem.data_fim), 'dd/MM/yyyy')}
                 </div>
-
                 {/* Cidades */}
-                <div className="flex flex-wrap gap-1 items-center">
+                <div className="flex flex-wrap gap-1 items-center min-h-[32px] relative">
                   {cidadesToShow.map(cid => {
                     const c = cidades.find(x => x.id === cid);
                     return c ? (
@@ -446,44 +469,69 @@ const TravelManagement = () => {
                     ) : null;
                   })}
                   {cidadesViagem.length > 1 && (
-                    <button
-                      className={`text-xs font-bold text-black ml-2 rounded px-2 py-1 transition bg-gray-200 ${isExpanded ? 'bg-gray-300' : ''}`}
-                      style={{ outline: 'none', border: 'none' }}
-                      onClick={() => setExpandedCards(prev => ({ ...prev, [viagem.id]: !prev[viagem.id] }))}
-                    >
-                      {isExpanded ? 'Mostrar menos' : 'Mostrar mais'}
-                    </button>
+                    <div className="relative inline-block">
+                      <button
+                        ref={el => (popoverButtonRefs.current[viagem.id] = el)}
+                        className="peer text-xs font-bold text-[#38bdf8] ml-2 rounded-none px-2 py-1 transition"
+                        style={{ backgroundColor: 'rgba(56, 189, 248, 0.15)', outline: 'none', border: 'none' }}
+                        onClick={e => {
+                          e.stopPropagation();
+                          setOpenPopoverId(openPopoverId === viagem.id ? null : viagem.id);
+                        }}
+                      >
+                        Mostrar mais
+                      </button>
+                      {openPopoverId === viagem.id && (
+                        <div
+                          ref={el => (popoverRefs.current[viagem.id] = el)}
+                          className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 z-50 bg-white border border-gray-200 shadow-lg rounded-none p-2 min-w-[160px] flex flex-col items-start animate-fade-in transition-all duration-700 ease-in-out"
+                        >
+                          <div className="absolute left-1/2 translate-x-[-50%] bottom-[-8px] w-4 h-4 overflow-hidden">
+                            <div className="w-4 h-4 bg-white border-l border-t border-gray-200 rotate-45 mx-auto"></div>
+                          </div>
+                          {cidadesViagem.map(cid => {
+                            const c = cidades.find(x => x.id === cid);
+                            return c ? (
+                              <span key={cid} className="block px-2 py-1 text-sm text-gray-700 w-full text-left">{c.nome}</span>
+                            ) : null;
+                          })}
+                        </div>
+                      )}
+                    </div>
                   )}
                 </div>
-
-                {/* Botão visualizar participantes */}
-                <Button
-                  variant="secondary"
-                  className="w-full mt-2"
-                  onClick={() => handleOpenParticipantesModal(viagem)}
-                >
-                  Visualizar Participantes
-                </Button>
-
-                {/* Botões de ação */}
-                <div className="flex gap-2 mt-4 w-full">
-                  <Button 
-                    variant="outline" 
-                    className="flex-1" 
-                    onClick={() => setSelectedViagem(viagem.id)}>
+                {/* Botões em coluna */}
+                <div className="flex flex-col gap-2 mt-2 w-full">
+                  <Button
+                    className="w-full bg-gray-200/70 text-black hover:bg-gray-300 rounded-none flex items-center justify-center gap-2"
+                    onClick={() => handleOpenParticipantesModal(viagem)}
+                  >
+                    <Users className="w-4 h-4" />
+                    Visualizar Participantes
+                  </Button>
+                  <Button
+                    className="w-full bg-black text-white hover:bg-gray-900 rounded-none flex items-center justify-center gap-2"
+                    onClick={() => setSelectedViagem(viagem.id)}
+                  >
+                    <MapPin className="w-4 h-4" />
                     Gerenciar Roteiro
                   </Button>
-                  <Button 
-                    className="flex-1 bg-yellow-400 hover:bg-yellow-500 text-black" 
-                    onClick={() => handleEditViagem(viagem)}>
-                    Editar
-                  </Button>
-                  <Button 
-                    variant="destructive" 
-                    className="flex-1" 
-                    onClick={() => handleDeleteViagem(viagem.id)}>
-                    Excluir
-                  </Button>
+                  <div className="flex gap-2 w-full">
+                    <Button
+                      className="w-1/2 bg-[#95c11f]/30 text-[#95c11f] hover:bg-[#95c11f]/50 rounded-none flex items-center justify-center gap-2"
+                      onClick={() => handleEditViagem(viagem)}
+                    >
+                      <Edit className="w-4 h-4" />
+                      Editar
+                    </Button>
+                    <Button
+                      className="w-1/2 bg-red-500/20 text-red-600 hover:bg-red-500/40 rounded-none flex items-center justify-center gap-2"
+                      onClick={() => handleDeleteViagem(viagem.id)}
+                    >
+                      <Trash2 className="w-4 h-4" />
+                      Excluir
+                    </Button>
+                  </div>
                 </div>
               </div>
             </Card>

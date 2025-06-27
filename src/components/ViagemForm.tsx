@@ -77,7 +77,7 @@ export function ViagemForm({ open, onOpenChange, onSuccess }: { open: boolean, o
             <label className="block text-sm font-medium mb-2">Participante</label>
             <div className="flex gap-2 items-center mb-2">
               <select
-                className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-base"
+                className="flex h-10 w-full border border-input bg-background px-3 py-2 text-base rounded-none"
                 value={selectedParticipante}
                 onChange={e => setSelectedParticipante(e.target.value)}
               >
@@ -92,7 +92,7 @@ export function ViagemForm({ open, onOpenChange, onSuccess }: { open: boolean, o
               </select>
               <button
                 type="button"
-                className="bg-blue-600 text-white rounded px-3 py-2 text-sm"
+                className="bg-[#95c11f] text-white px-3 py-2 text-sm rounded-none"
                 onClick={() => {
                   if (selectedParticipante && !formData.participantes_id.includes(selectedParticipante)) {
                     setFormData(prev => ({
@@ -128,7 +128,7 @@ export function ViagemForm({ open, onOpenChange, onSuccess }: { open: boolean, o
           <div>
             <label className="block text-sm font-medium mb-2">Guia Turístico</label>
             <select
-              className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-base"
+              className="flex h-10 w-full border border-input bg-background px-3 py-2 text-base rounded-none"
               value={formData.guia_turistico_id}
               onChange={e => setFormData({ ...formData, guia_turistico_id: e.target.value })}
               required
@@ -145,7 +145,7 @@ export function ViagemForm({ open, onOpenChange, onSuccess }: { open: boolean, o
             <label className="block text-sm font-medium mb-2">Cidade</label>
             <div className="flex gap-2 items-center mb-2">
               <select
-                className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-base"
+                className="flex h-10 w-full border border-input bg-background px-3 py-2 text-base rounded-none"
                 value={selectedCidade}
                 onChange={e => setSelectedCidade(e.target.value)}
                 required={!formData.cidades_id.length}
@@ -161,13 +161,13 @@ export function ViagemForm({ open, onOpenChange, onSuccess }: { open: boolean, o
               </select>
               <button
                 type="button"
-                className="bg-blue-600 text-white rounded px-3 py-2 text-sm"
+                className="bg-[#95c11f] text-white px-3 py-2 text-sm rounded-none"
                 onClick={() => {
                   if (selectedCidade && !formData.cidades_id.includes(selectedCidade)) {
-                    setFormData({
-                      ...formData,
-                      cidades_id: [...formData.cidades_id, selectedCidade]
-                    });
+                    setFormData(prev => ({
+                      ...prev,
+                      cidades_id: [...prev.cidades_id, selectedCidade]
+                    }));
                     setSelectedCidade('');
                   }
                 }}
@@ -201,6 +201,7 @@ export function ViagemForm({ open, onOpenChange, onSuccess }: { open: boolean, o
               value={formData.data_inicio}
               onChange={(e) => setFormData({...formData, data_inicio: e.target.value})}
               required
+              className="rounded-none"
             />
           </div>
           <div>
@@ -210,6 +211,7 @@ export function ViagemForm({ open, onOpenChange, onSuccess }: { open: boolean, o
               value={formData.data_fim}
               onChange={(e) => setFormData({...formData, data_fim: e.target.value})}
               required
+              className="rounded-none"
             />
           </div>
           <div>
@@ -224,7 +226,7 @@ export function ViagemForm({ open, onOpenChange, onSuccess }: { open: boolean, o
             )}
           </div>
           {error && <div className="text-red-500 text-sm">{error}</div>}
-          <Button type="submit" className="w-full" disabled={loading}>{loading ? 'Salvando...' : 'Criar Viagem'}</Button>
+          <Button type="submit" className="w-full bg-black text-white hover:bg-gray-900 rounded-none" disabled={loading}>{loading ? 'Salvando...' : 'Criar Viagem'}</Button>
         </form>
       </DialogContent>
     </Dialog>

@@ -37,21 +37,25 @@ export function CidadeForm({ open, onOpenChange, onSuccess }: { open: boolean, o
           <div>
             <label className="block text-sm font-medium mb-2">Nome da Cidade</label>
             <Input
-              value={formData.nome}
-              onChange={e => setFormData({ ...formData, nome: e.target.value })}
+              type="text"
               required
+              value={formData.nome}
+              onChange={(e) => setFormData({ ...formData, nome: e.target.value })}
+              className="rounded-none"
             />
           </div>
           <div>
             <label className="block text-sm font-medium mb-2">Estado</label>
             <Input
-              value={formData.estado}
-              onChange={e => setFormData({ ...formData, estado: e.target.value })}
+              type="text"
               required
+              value={formData.estado}
+              onChange={(e) => setFormData({ ...formData, estado: e.target.value })}
+              className="rounded-none"
             />
           </div>
           {error && <div className="text-red-500 text-sm">{error}</div>}
-          <Button type="submit" className="w-full" disabled={loading}>{loading ? 'Salvando...' : 'Criar Cidade'}</Button>
+          <Button type="submit" className="w-full bg-black text-white hover:bg-gray-900 rounded-none" disabled={loading}>{loading ? 'Salvando...' : 'Criar Cidade'}</Button>
         </form>
       </DialogContent>
     </Dialog>
